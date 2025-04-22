@@ -2,10 +2,6 @@
 
 Dotfiles for my Suckless setup.
 
-## Prerequisites
-
-- **Git** (version **2.27** or higher) for installing **NvChad**.
-
 ## Installation
 
 To install, run the following command:
