@@ -3,5 +3,5 @@ Dot files for my Suckless setup
 
 Install:
 ```
-curl -fsSL https://github.com/supplefrog/suckless-dot/blob/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/supplefrog/suckless-dot/refs/heads/main/install.sh | bash
 ```
