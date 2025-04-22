@@ -63,4 +63,4 @@ echo "Setting executable permission on dwm startup script..."
 sudo chmod +x ~/de/dwm/de.sh
 
 echo "Installation completed successfully!"
-rm -rf ~/Downloads/suckless-dot*
+rm -rf ~/Downloads/suckless-dot
