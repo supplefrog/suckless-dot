@@ -18,8 +18,6 @@ echo "Updating font cache..."
 sudo fc-cache -fv
 
 echo "Installing required packages..."
-sudo chmod +x update_git_version.sh
-./update_git_version.sh
 sudo yum install -y \
     xorg-x11-server-Xorg \
     xorg-x11-xinit \
@@ -35,10 +33,12 @@ sudo yum install -y \
     libxcb-devel \
     libXt-devel \
     feh \
-    git \
     gcc \
     make \
     pkgconfig
+    
+sudo chmod +x update_git_version.sh
+./update_git_version.sh
 
 echo "Installing dwm..."
 cd ~/de/dwm
