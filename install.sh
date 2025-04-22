@@ -50,6 +50,7 @@ sudo yum install -y \
 echo "Installing dwm..."
 cd ~/de/dwm
 make clean install
+yum install dmenu vifm -y
 
 echo "Installing st..."
 cd ~/de/st
