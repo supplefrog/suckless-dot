@@ -1,2 +1,1 @@
-/root/de/dwm/de.sh &
-exec dwm
+/root/de/dwm/de.sh
