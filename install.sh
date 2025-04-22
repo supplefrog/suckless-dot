@@ -8,7 +8,7 @@ echo "Downloading repository..."
 curl -L https://github.com/supplefrog/suckless-dot/archive/refs/heads/main.zip -o suckless-dot.zip
 
 echo "Unzipping the repository..."
-unzip suckless-dot.zip -d suckless-dot
+unzip -o suckless-dot.zip -d suckless-dot
 
 cd suckless-dot/suckless-dot-main
 
