@@ -53,8 +53,10 @@ echo "Installing feh..."
 cd ~/de/feh
 make && sudo make install
 
+echo "Replacing vim with nvim..."
 yum remove vim -y
 ln -s /usr/bin/nvim-linux-x86_64.appimage /usr/bin/vim
+
 
 echo "Setting executable permission on dwm startup script..."
 sudo chmod +x ~/de/dwm/de.sh
