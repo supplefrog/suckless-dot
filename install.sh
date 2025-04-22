@@ -13,9 +13,10 @@ unzip suckless-dot.zip -d suckless-dot
 cd suckless-dot/suckless-dot-main
 
 echo "Moving configuration files..."
-sudo mv etc/* /etc
-sudo mv home/e/* ~
-sudo mv usr/* /usr
+# Only move if not already exists
+sudo mv -n etc/* /etc || true
+sudo mv -n home/e/* ~ || true
+sudo mv -n usr/* /usr || true
 
 echo "Updating font cache..."
 sudo fc-cache -fv
@@ -57,4 +58,4 @@ echo "Setting executable permission on dwm startup script..."
 sudo chmod +x ~/de/dwm/de.sh
 
 echo "Installation completed successfully!"
-
+rm -rf ~/Downloads/suckless-dot*
