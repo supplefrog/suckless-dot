@@ -4,16 +4,7 @@ set -euo pipefail
 
 cd ~/Downloads
 
-if [ -f "suckless-dot.zip" ] && unzip -t suckless-dot.zip &>/dev/null; then
-    echo "Zip file is valid, skipping download."
-else
-    echo "Downloading repository..."
-    rm -f suckless-dot.zip
-    curl -L https://github.com/supplefrog/suckless-dot/archive/refs/heads/main.zip -o suckless-dot.zip
-fi
-
-echo "Unzipping the repository..."
-unzip -o suckless-dot.zip -d suckless-dot
+git clone https://github.com/supplefrog/suckless-dot.git
 
 cd suckless-dot/suckless-dot-main
 
@@ -67,4 +58,3 @@ echo "Setting executable permission on dwm startup script..."
 sudo chmod +x ~/de/dwm/de.sh
 
 echo "Installation completed successfully!"
-rm -rf ~/Downloads/suckless-dot
