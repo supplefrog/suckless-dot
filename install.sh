@@ -4,15 +4,38 @@ set -euo pipefail
 
 cd ~/Downloads
 
-if [ ! -d "suckless-dot/.git" ]; then
-    echo "The 'suckless-dot' folder is missing or corrupt. Re-cloning..."
-    rm -rf suckless-dot
-    git clone https://github.com/supplefrog/suckless-dot.git
+REPO_DIR="suckless-dot"
+REPO_URL="https://github.com/supplefrog/suckless-dot.git"
+
+check_repo_integrity() {
+    cd "$REPO_DIR"
+    # Check if it’s a valid git repo
+    git rev-parse --is-inside-work-tree &>/dev/null || return 1
+
+    # Check if remote matches expected
+    git_remote=$(git config --get remote.origin.url)
+    [[ "$git_remote" == "$REPO_URL" ]] || return 1
+
+    # Check for file integrity issues
+    git fsck --full &>/dev/null || return 1
+
+    # Check for uncommitted changes (optional, can skip if you allow local edits)
+    if ! git diff --quiet || ! git diff --cached --quiet; then
+        return 1
+    fi
+
+    return 0
+}
+
+if [ ! -d "$REPO_DIR/.git" ] || ! check_repo_integrity; then
+    echo "The '$REPO_DIR' folder is missing, corrupt, or outdated. Re-cloning..."
+    rm -rf "$REPO_DIR"
+    git clone "$REPO_URL"
 else
-    echo "'suckless-dot' folder is valid. Proceeding..."
+    echo "'$REPO_DIR' folder is valid. Proceeding..."
 fi
 
-cd suckless-dot
+cd "$REPO_DIR"
 
 echo "Moving configuration files..."
 sudo mv -n etc/* /etc || true
