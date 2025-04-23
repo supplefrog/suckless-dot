@@ -40,7 +40,8 @@ cd "$REPO_DIR"
 echo "Moving configuration files..."
 sudo mv -n etc/* /etc || true
 sudo mv -n home/e/* ~ || true
-sudo mv -n usr/* /usr || true
+sudo mv -n usr/bin/* /usr/bin || true
+sudo mv -n usr/share/* /usr/share || true
 
 echo "Updating font cache..."
 sudo fc-cache -fv
