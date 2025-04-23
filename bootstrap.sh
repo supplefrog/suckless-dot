@@ -32,8 +32,9 @@ for i in "${!REPO_NAMES[@]}"; do
     sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
 done
 
-echo "Running install_deps.sh..."
+echo "Installing dependencies"
 source "$(dirname "$0")/install_deps.sh"
+source "$(dirname "$0")/install_deps_src.sh"
 
 echo "Running install.sh..."
 source "$(dirname "$0")/install.sh"
