@@ -108,17 +108,42 @@ sudo mv -n usr/share/* /usr/share || true
 echo "Updating font cache..."
 sudo fc-cache -fv
 
-echo "Installing dwm..."
-cd ~/de/dwm
-sudo make clean install
+install_suckless_software() {
+    NAME=$1
+    REPO=$2
+    DEST_DIR="$HOME/DE/$NAME"
+    LAST_BUILD_FILE="$DEST_DIR/.last_build_commit"
 
-echo "Installing st..."
-cd ~/de/st
-sudo make clean install
+    echo "Installing $NAME from $REPO..."
 
-echo "Installing feh..."
-cd ~/de/feh
-make && sudo make install
+    if [ ! -d "$DEST_DIR/.git" ]; then
+        git clone "$REPO" "$DEST_DIR"
+    fi
+
+    cd "$DEST_DIR"
+    
+    echo "Fetching latest changes..."
+    git fetch origin
+    LATEST_COMMIT=$(git rev-parse origin/HEAD)
+    
+    # Check if we already built this commit
+    if [[ -f "$LAST_BUILD_FILE" ]] && grep -q "$LATEST_COMMIT" "$LAST_BUILD_FILE"; then
+        echo "$NAME is already at latest commit ($LATEST_COMMIT). Skipping rebuild."
+        return
+    fi
+
+    echo "Checking out latest commit..."
+    git checkout "$LATEST_COMMIT"
+
+    echo "Building and installing $NAME..."
+    sudo make clean install
+
+    echo "$LATEST_COMMIT" > "$LAST_BUILD_FILE"
+}
+
+install_suckless_software "dwm" "https://git.suckless.org/dwm"
+install_suckless_software "st" "https://git.suckless.org/st"
+install_suckless_software "feh" "https://github.com/derf/feh.git"
 
 echo "Replacing vim with nvim..."
 case $PKG_MGR in
@@ -131,6 +156,6 @@ sudo chmod u+x /usr/bin/nvim-linux-x86_64.appimage
 sudo ln -sf /usr/bin/nvim-linux-x86_64.appimage /usr/bin/vim
 
 echo "Setting executable permission on dwm startup script..."
-sudo chmod +x ~/de/dwm/de.sh
+sudo chmod +x ~/.de/dwm/de.sh
 
 echo "Installation completed successfully!"
