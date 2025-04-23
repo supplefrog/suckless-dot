@@ -6,7 +6,7 @@ cd ~/Downloads
 
 git clone https://github.com/supplefrog/suckless-dot.git
 
-cd suckless-dot/suckless-dot-main
+cd suckless-dot
 
 echo "Moving configuration files..."
 sudo mv -n etc/* /etc || true
