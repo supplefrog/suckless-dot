@@ -1,4 +1,5 @@
 # pkg_manager_utils.sh
+
 detect_pkg_manager() {
     if command -v apt &> /dev/null; then
         PKG_MGR="apt"
@@ -15,15 +16,5 @@ detect_pkg_manager() {
     else
         echo "Unsupported package manager."
         exit 1
-    fi
-}
-
-install_package_if_missing() {
-    PACKAGE="$1"
-    if ! command -v "$PACKAGE" &> /dev/null; then
-        echo "Installing $PACKAGE..."
-        $INSTALL_CMD "$PACKAGE"
-    else
-        echo "$PACKAGE is already installed."
     fi
 }
