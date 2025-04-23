@@ -26,21 +26,34 @@ sudo fc-cache -fv
 if command -v apt &> /dev/null; then
     PKG_MGR="apt"
     INSTALL="sudo apt install -y"
+    REPO_CMD=""
 elif command -v dnf &> /dev/null; then
     PKG_MGR="dnf"
     INSTALL="sudo dnf install -y"
+    REPO_CMD="sudo dnf install -y epel-release"
 elif command -v yum &> /dev/null; then
     PKG_MGR="yum"
     INSTALL="sudo yum install -y"
+    REPO_CMD="sudo yum install -y epel-release"
 elif command -v pacman &> /dev/null; then
     PKG_MGR="pacman"
     INSTALL="sudo pacman -Syu --noconfirm"
+    REPO_CMD=""
 else
     echo "Unsupported package manager."
     exit 1
 fi
 
 echo "Using package manager: $PKG_MGR"
+
+# Ensure required repos are installed
+if [ -n "$REPO_CMD" ]; then
+    echo "Checking for necessary repositories..."
+    if ! sudo dnf repolist | grep -q "epel"; then
+        echo "EPEL repo missing. Installing..."
+        eval "$REPO_CMD"
+    fi
+fi
 
 echo "Installing required packages..."
 $INSTALL \
