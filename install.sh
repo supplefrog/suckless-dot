@@ -50,36 +50,49 @@ fi
 echo "Installing required packages..."
 $INSTALL_CMD $PKG_LIST
 
-REPO_DIR="~/Downloads/suckless-dot"
+REPO_DIR="$HOME/Downloads/suckless-dot"
 REPO_URL="https://github.com/supplefrog/suckless-dot.git"
 
 check_repo_integrity() {
-    cd "$REPO_DIR"
-    # Check if it’s a valid git repo
-    git rev-parse --is-inside-work-tree &>/dev/null || return 1
-
-    # Check if remote matches expected
-    git_remote=$(git config --get remote.origin.url)
-    [[ "$git_remote" == "$REPO_URL" ]] || return 1
-
-    # Check for file integrity issues
-    git fsck --full &>/dev/null || return 1
-
-    # Check for uncommitted changes (optional, can skip if you allow local edits)
-    if ! git diff --quiet || ! git diff --cached --quiet; then
-        return 1
+    if [ ! -d "$REPO_DIR/.git" ]; then
+        echo "Not a git repository. Cloning fresh copy..."
+        git clone "$REPO_URL" "$REPO_DIR"
+        return
     fi
 
-    return 0
+    cd "$REPO_DIR"
+
+    # Fix remote URL if needed
+    git_remote=$(git config --get remote.origin.url)
+    if [[ "$git_remote" != "$REPO_URL" ]]; then
+        echo "Remote URL mismatch. Fixing..."
+        git remote set-url origin "$REPO_URL"
+    fi
+
+    echo "Fetching latest changes..."
+    git fetch origin
+
+    echo "Checking for file corruption..."
+    CORRUPT_FILES=$(git fsck --full 2>&1 | grep 'missing blob' | awk '{ print $3 }')
+
+    if [[ -n "$CORRUPT_FILES" ]]; then
+        echo "Corrupt or missing files found. Attempting to restore..."
+        for hash in $CORRUPT_FILES; do
+            FILE=$(git rev-list --all --objects | grep "$hash" | awk '{print $2}')
+            if [[ -n "$FILE" ]]; then
+                echo "Restoring $FILE..."
+                git checkout origin/HEAD -- "$FILE"
+            fi
+        done
+    else
+        echo "No corruption detected."
+    fi
+
+    echo "Ensuring working directory is up to date..."
+    git pull --rebase --autostash || echo "Pull failed, but repo integrity is OK."
 }
 
-if [ ! -d "$REPO_DIR/.git" ] || ! check_repo_integrity; then
-    echo "The '$REPO_DIR' folder is missing, corrupt, or outdated. Re-cloning..."
-    rm -rf "$REPO_DIR"
-    git clone "$REPO_URL"
-else
-    echo "'$REPO_DIR' folder is valid. Proceeding..."
-fi
+check_repo_integrity
 
 cd "$REPO_DIR"
 
