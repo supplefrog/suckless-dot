@@ -2,149 +2,51 @@
 
 set -euo pipefail
 
-# Detect package manager
-PKG_MGR=""
-INSTALL_CMD=""
-PKG_LIST=""
-REPO_CMD=""
+# Source functions from an external script
+source "$(dirname "$0")/git_sync_utils.sh"
+source "$(dirname "$0")/check_package_manager.sh"  # Assuming this is a separate file for package manager checks
 
-if command -v apt &> /dev/null; then
-    PKG_MGR="apt"
-    INSTALL_CMD="sudo apt install -y"
-    PKG_LIST="xorg xorg-dev xserver-xorg libcurl4-openssl-dev libimlib2-dev libx11-dev libxft-dev libxinerama-dev libxrandr-dev libxcb1-dev libxt-dev gcc git make pkg-config dmenu vifm"
-elif command -v pacman &> /dev/null; then
-    PKG_MGR="pacman"
-    INSTALL_CMD="sudo pacman -Syu --noconfirm"
-    PKG_LIST="xorg xorg-xinit xorg-server libcurl-compat libimlib2 libx11 libxft libxinerama libxrandr libxcb libxt gcc git make pkgconf dmenu vifm"
-    # Ensure yay (AUR helper) is available for Arch-based systems
-    if ! command -v yay &> /dev/null; then
-        echo "AUR helper (yay) not found. Installing yay..."
-        sudo pacman -S --noconfirm yay
-    fi
-elif command -v dnf &> /dev/null; then
-    PKG_MGR="dnf"
-    INSTALL_CMD="sudo dnf install -y"
-    PKG_LIST="xorg-x11-server-Xorg imlib2-devel libcurl-devel libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel gcc git make pkgconf dmenu vifm"
-    REPO_CMD="sudo dnf install -y epel-release"
-elif command -v yum &> /dev/null; then
-    PKG_MGR="yum"
-    INSTALL_CMD="sudo yum install -y"
-    PKG_LIST="xorg-x11-server-Xorg imlib2-devel libcurl-devel libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel gcc git make pkgconf dmenu vifm"
-    REPO_CMD="sudo yum install -y epel-release"
-else
-    echo "Unsupported package manager."
-    exit 1
-fi
+# Define repositories
+REPO_NAMES=("suckless-dot" "dwm" "st" "feh")
+REPO_URLS=(
+    "https://github.com/supplefrog/suckless-dot.git"
+    "https://git.suckless.org/dwm"
+    "https://git.suckless.org/st"
+    "https://github.com/derf/feh.git"
+)
+REPO_DIRS=(
+    "$HOME/Downloads/suckless-dot"
+    "$HOME/DE/dwm"
+    "$HOME/DE/st"
+    "$HOME/DE/feh"
+)
+REPO_BUILDS=(
+    ""  # No build for suckless-dot
+    "sudo make clean install"
+    "sudo make clean install"
+    "sudo make clean install"
+)
 
-echo "Using package manager: $PKG_MGR"
+# Ensure required dependencies are installed
+check_and_install_packages
 
-# Ensure EPEL repo is installed for RHEL-based systems (if needed)
-if [ -n "$REPO_CMD" ]; then
-    echo "Checking for necessary repositories..."
-    if ! sudo dnf repolist | grep -q "epel"; then
-        echo "EPEL repo missing. Installing..."
-        eval "$REPO_CMD"
-    fi
-fi
+# Sync git repositories (handling cloning and integrity checks)
+for i in "${!REPO_NAMES[@]}"; do
+    sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
+done
 
-echo "Installing required packages..."
-$INSTALL_CMD $PKG_LIST
-
-REPO_DIR="$HOME/Downloads/suckless-dot"
-REPO_URL="https://github.com/supplefrog/suckless-dot.git"
-
-check_repo_integrity() {
-    if [ ! -d "$REPO_DIR/.git" ]; then
-        echo "Not a git repository. Cloning fresh copy..."
-        git clone "$REPO_URL" "$REPO_DIR"
-        return
-    fi
-
-    cd "$REPO_DIR"
-
-    # Fix remote URL if needed
-    git_remote=$(git config --get remote.origin.url)
-    if [[ "$git_remote" != "$REPO_URL" ]]; then
-        echo "Remote URL mismatch. Fixing..."
-        git remote set-url origin "$REPO_URL"
-    fi
-
-    echo "Fetching latest changes..."
-    git fetch origin
-
-    echo "Checking for file corruption..."
-    CORRUPT_FILES=$(git fsck --full 2>&1 | grep 'missing blob' | awk '{ print $3 }')
-
-    if [[ -n "$CORRUPT_FILES" ]]; then
-        echo "Corrupt or missing files found. Attempting to restore..."
-        for hash in $CORRUPT_FILES; do
-            FILE=$(git rev-list --all --objects | grep "$hash" | awk '{print $2}')
-            if [[ -n "$FILE" ]]; then
-                echo "Restoring $FILE..."
-                git checkout origin/HEAD -- "$FILE"
-            fi
-        done
-    else
-        echo "No corruption detected."
-    fi
-
-    echo "Ensuring working directory is up to date..."
-    git pull --rebase --autostash || echo "Pull failed, but repo integrity is OK."
-}
-
-check_repo_integrity
-
-cd "$REPO_DIR"
-
-sudo chmod +x update_deps_src.sh
-./update_deps_src.sh
-
+# Move configuration files to their respective locations
 echo "Moving configuration files..."
-sudo mv -n etc/* /etc || true
-sudo mv -n home/e/* ~ || true
-sudo mv -n usr/bin/* /usr/bin || true
-sudo mv -n usr/share/* /usr/share || true
+sudo mv -n "$HOME/Downloads/suckless-dot/etc/*" /etc || true
+sudo mv -n "$HOME/Downloads/suckless-dot/home/e/*" ~ || true
+sudo mv -n "$HOME/Downloads/suckless-dot/usr/bin/*" /usr/bin || true
+sudo mv -n "$HOME/Downloads/suckless-dot/usr/share/*" /usr/share || true
 
+# Update font cache
 echo "Updating font cache..."
 sudo fc-cache -fv
 
-install_suckless_software() {
-    NAME=$1
-    REPO=$2
-    DEST_DIR="$HOME/DE/$NAME"
-    LAST_BUILD_FILE="$DEST_DIR/.last_build_commit"
-
-    echo "Installing $NAME from $REPO..."
-
-    if [ ! -d "$DEST_DIR/.git" ]; then
-        git clone "$REPO" "$DEST_DIR"
-    fi
-
-    cd "$DEST_DIR"
-    
-    echo "Fetching latest changes..."
-    git fetch origin
-    LATEST_COMMIT=$(git rev-parse origin/HEAD)
-    
-    # Check if we already built this commit
-    if [[ -f "$LAST_BUILD_FILE" ]] && grep -q "$LATEST_COMMIT" "$LAST_BUILD_FILE"; then
-        echo "$NAME is already at latest commit ($LATEST_COMMIT). Skipping rebuild."
-        return
-    fi
-
-    echo "Checking out latest commit..."
-    git checkout "$LATEST_COMMIT"
-
-    echo "Building and installing $NAME..."
-    sudo make clean install
-
-    echo "$LATEST_COMMIT" > "$LAST_BUILD_FILE"
-}
-
-install_suckless_software "dwm" "https://git.suckless.org/dwm"
-install_suckless_software "st" "https://git.suckless.org/st"
-install_suckless_software "feh" "https://github.com/derf/feh.git"
-
+# Replacing vim with nvim
 echo "Replacing vim with nvim..."
 case $PKG_MGR in
     apt) sudo apt remove -y vim vim-tiny vim-common || true ;;
@@ -155,7 +57,8 @@ esac
 sudo chmod u+x /usr/bin/nvim-linux-x86_64.appimage
 sudo ln -sf /usr/bin/nvim-linux-x86_64.appimage /usr/bin/vim
 
+# Setting executable permission on dwm startup script
 echo "Setting executable permission on dwm startup script..."
-sudo chmod +x ~/.de/dwm/de.sh
+sudo chmod +x "$HOME/.de/dwm/de.sh"
 
 echo "Installation completed successfully!"
