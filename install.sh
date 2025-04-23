@@ -53,6 +53,9 @@ $INSTALL_CMD $PKG_LIST
 
 cd ~/Downloads
 
+sudo chmod +x update_deps_src.sh
+./update_deps_src.sh
+
 REPO_DIR="suckless-dot"
 REPO_URL="https://github.com/supplefrog/suckless-dot.git"
 
@@ -106,9 +109,6 @@ sudo make clean install
 echo "Installing feh..."
 cd ~/de/feh
 make && sudo make install
-
-sudo chmod +x update_git_version.sh
-./update_git_version.sh
 
 echo "Replacing vim with nvim..."
 case $PKG_MGR in
