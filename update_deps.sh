@@ -35,7 +35,7 @@ fi
 
 echo "Using package manager: $PKG_MGR"
 
-# Ensure EPEL repo is installed for RHEL-based systems (if needed)
+# Install base packages
 if [ -n "$REPO_CMD" ]; then
     echo "Checking for necessary repositories..."
     if ! sudo dnf repolist | grep -q "epel"; then
