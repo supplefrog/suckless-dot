@@ -1,25 +1,39 @@
 #!/bin/bash
+
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/pkg_manager_utils.sh"
+source "$(dirname "$0")/pkg_manager_utils.sh"
+source "$(dirname "$0")/git_sync_utils.sh"
 
-detect_pkg_manager
+install_essential_packages
 
-# Install only essentials to clone the full repo
-$INSTALL_CMD git curl
+# Clone repositories and run integrity checks
+REPO_NAMES=("suckless-dot" "dwm" "st" "feh")
+REPO_URLS=(
+    "https://github.com/supplefrog/suckless-dot.git"
+    "https://git.suckless.org/dwm"
+    "https://git.suckless.org/st"
+    "https://github.com/derf/feh.git"
+)
+REPO_DIRS=(
+    "$HOME/Downloads/suckless-dot"
+    "$HOME/DE/dwm"
+    "$HOME/DE/st"
+    "$HOME/DE/feh"
+)
+REPO_BUILDS=(
+    ""  # No build for suckless-dot
+    "sudo make clean install"
+    "sudo make clean install"
+    "sudo make clean install"
+)
 
-REPO_URL="https://github.com/supplefrog/suckless-dot.git"
-CLONE_DIR="$HOME/Downloads/suckless-dot"
+for i in "${!REPO_NAMES[@]}"; do
+    sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
+done
 
-if [ ! -d "$CLONE_DIR/.git" ]; then
-    echo "Cloning repo..."
-    git clone "$REPO_URL" "$CLONE_DIR"
-else
-    echo "Repo already exists, skipping clone."
-fi
+echo "Running update_deps.sh..."
+source "$(dirname "$0")/update_deps.sh"
 
-cd "$CLONE_DIR"
-chmod +x update_deps.sh install.sh
-./update_deps.sh
-./install.sh
+echo "Running install.sh..."
+source "$(dirname "$0")/install.sh"
