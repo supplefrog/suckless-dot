@@ -4,7 +4,18 @@ set -euo pipefail
 
 cd ~/Downloads
 
-git clone https://github.com/supplefrog/suckless-dot.git
+if [ -d "suckless-dot" ]; then
+    if [ ! -d "suckless-dot/.git" ]; then
+        echo "The suckless-dot folder is corrupt or not a valid Git repository. Removing it and re-cloning..."
+        rm -rf suckless-dot
+        git clone https://github.com/supplefrog/suckless-dot.git
+    else
+        echo "The suckless-dot folder exists and is a valid Git repository."
+    fi
+else
+    echo "Cloning suckless-dot repository..."
+    git clone https://github.com/supplefrog/suckless-dot.git
+fi
 
 cd suckless-dot
 
