@@ -23,6 +23,8 @@ echo "Updating font cache..."
 sudo fc-cache -fv
 
 # Detect package manager
+REPO_CMD=""
+
 if command -v apt &> /dev/null; then
     PKG_MGR="apt"
     INSTALL="sudo apt install -y"
