@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Check the current installed version of git
 git_version=$(git --version | awk '{print $3}')
 required_version="2.27"
