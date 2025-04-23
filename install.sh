@@ -111,8 +111,9 @@ make && sudo make install
 
 echo "Replacing vim with nvim..."
 case $PKG_MGR in
-    apt|dnf|yum) sudo $PKG_MGR remove -y vim ;;
-    pacman) sudo pacman -Rns --noconfirm vim ;;
+    apt) sudo apt remove -y vim vim-tiny vim-common || true ;;
+    dnf|yum) sudo $PKG_MGR remove -y vim || true ;;
+    pacman) sudo pacman -Rns --noconfirm vim || true ;;
 esac
 
 sudo chmod u+x /usr/bin/nvim-linux-x86_64.appimage
