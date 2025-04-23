@@ -76,11 +76,11 @@ sudo chmod +x update_git_version.sh
 
 echo "Installing dwm..."
 cd ~/de/dwm
-make clean install
+sudo make clean install
 
 echo "Installing st..."
 cd ~/de/st
-make clean install
+sudo make clean install
 
 echo "Installing feh..."
 cd ~/de/feh
