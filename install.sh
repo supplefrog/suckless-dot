@@ -53,9 +53,6 @@ $INSTALL_CMD $PKG_LIST
 REPO_DIR="~/Downloads/suckless-dot"
 REPO_URL="https://github.com/supplefrog/suckless-dot.git"
 
-sudo chmod +x update_deps_src.sh
-./update_deps_src.sh
-
 check_repo_integrity() {
     cd "$REPO_DIR"
     # Check if it’s a valid git repo
@@ -85,6 +82,9 @@ else
 fi
 
 cd "$REPO_DIR"
+
+sudo chmod +x update_deps_src.sh
+./update_deps_src.sh
 
 echo "Moving configuration files..."
 sudo mv -n etc/* /etc || true
