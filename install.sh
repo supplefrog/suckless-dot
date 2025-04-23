@@ -52,8 +52,8 @@ $INSTALL \
     libXrandr-devel \
     libxcb-devel \
     libXt-devel \
-    feh \
     gcc \
+    git \
     make \
     pkgconf \
     dmenu \
