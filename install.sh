@@ -47,14 +47,13 @@ if [ -n "$REPO_CMD" ]; then
     fi
 fi
 
-# Installing required packages
 echo "Installing required packages..."
 $INSTALL_CMD $PKG_LIST
 
-cd ~/Downloads
-
 sudo chmod +x update_deps_src.sh
 ./update_deps_src.sh
+
+cd ~/Downloads
 
 REPO_DIR="suckless-dot"
 REPO_URL="https://github.com/supplefrog/suckless-dot.git"
