@@ -26,7 +26,20 @@ sudo fc-cache -fv
 if command -v apt &> /dev/null; then
     PKG_MGR="apt"
     INSTALL="sudo apt install -y"
-    REPO_CMD=""
+    # Same repository enabling logic as before (see APT section)
+    sudo add-apt-repository -y universe || true
+    sudo add-apt-repository -y multiverse || true
+    sudo add-apt-repository -y backports || true
+    sudo apt update
+elif command -v pacman &> /dev/null; then
+    PKG_MGR="pacman"
+    INSTALL="sudo pacman -Syu --noconfirm"
+    
+    # Check if an AUR helper like yay or paru is installed
+    if ! command -v yay &> /dev/null; then
+        echo "AUR helper (yay) not found. Installing yay..."
+        sudo pacman -S --noconfirm yay
+    fi
 elif command -v dnf &> /dev/null; then
     PKG_MGR="dnf"
     INSTALL="sudo dnf install -y"
@@ -35,10 +48,6 @@ elif command -v yum &> /dev/null; then
     PKG_MGR="yum"
     INSTALL="sudo yum install -y"
     REPO_CMD="sudo yum install -y epel-release"
-elif command -v pacman &> /dev/null; then
-    PKG_MGR="pacman"
-    INSTALL="sudo pacman -Syu --noconfirm"
-    REPO_CMD=""
 else
     echo "Unsupported package manager."
     exit 1
