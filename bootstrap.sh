@@ -25,7 +25,7 @@ REPO_BUILDS=(
     ""  # No build for suckless-dot
     "sudo make clean install"
     "sudo make clean install"
-    "sudo make clean install"
+    "sudo make && sudo make install"
 )
 
 for i in "${!REPO_NAMES[@]}"; do
