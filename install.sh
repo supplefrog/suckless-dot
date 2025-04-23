@@ -92,7 +92,7 @@ case $PKG_MGR in
     pacman) sudo pacman -Rns --noconfirm vim ;;
 esac
 
-sudo chmod u+x nvim-linux-x86_64.appimage
+sudo chmod u+x /usr/bin/nvim-linux-x86_64.appimage
 sudo ln -sf /usr/bin/nvim-linux-x86_64.appimage /usr/bin/vim
 
 echo "Setting executable permission on dwm startup script..."
