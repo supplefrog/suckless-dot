@@ -20,5 +20,6 @@ else
 fi
 
 cd "$CLONE_DIR"
-chmod +x update_deps.sh
+chmod +x update_deps.sh install.sh
 ./update_deps.sh
+./install.sh
