@@ -7,6 +7,7 @@ sync_git_repo() {
 
     echo "==> Syncing $NAME from $REPO_URL"
 
+    # Clone repository if it doesn't exist
     if [ ! -d "$DEST_DIR/.git" ]; then
         echo "$NAME not found. Cloning fresh copy..."
         git clone "$REPO_URL" "$DEST_DIR"
@@ -14,7 +15,7 @@ sync_git_repo() {
 
     cd "$DEST_DIR"
 
-    # Ensure correct remote
+    # Ensure remote URL is correct
     CURRENT_REMOTE=$(git config --get remote.origin.url)
     if [[ "$CURRENT_REMOTE" != "$REPO_URL" ]]; then
         echo "Remote URL mismatch for $NAME. Fixing..."
@@ -39,25 +40,28 @@ sync_git_repo() {
         echo "No corruption detected in $NAME."
     fi
 
+    # Fetch latest commit
     LATEST_COMMIT=$(git rev-parse origin/HEAD)
 
-    # For repos with build logic (e.g., dwm/st/feh), avoid rebuild if commit is same
+    # Handle build logic (only rebuild if the commit has changed)
     if [[ -n "$BUILD_CMD" ]]; then
+        # Check if the commit has been built previously
         if [[ -f "$LAST_BUILD_FILE" ]] && grep -q "$LATEST_COMMIT" "$LAST_BUILD_FILE"; then
             echo "$NAME is already built at $LATEST_COMMIT. Skipping rebuild."
             return
         fi
 
-        echo "Checking out latest commit of $NAME..."
+        echo "Checking out latest commit for $NAME..."
         git checkout "$LATEST_COMMIT"
 
         echo "Running build for $NAME..."
         eval "$BUILD_CMD"
 
+        # Update the last build commit file
         echo "$LATEST_COMMIT" > "$LAST_BUILD_FILE"
     else
-        echo "Checking out latest for $NAME..."
-        git checkout "$LATEST_COMMIT"
+        # Just pull the latest changes without rebuilding
+        echo "Pulling latest changes for $NAME..."
         git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
     fi
 }
