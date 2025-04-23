@@ -50,13 +50,11 @@ fi
 echo "Installing required packages..."
 $INSTALL_CMD $PKG_LIST
 
+REPO_DIR="~/Downloads/suckless-dot"
+REPO_URL="https://github.com/supplefrog/suckless-dot.git"
+
 sudo chmod +x update_deps_src.sh
 ./update_deps_src.sh
-
-cd ~/Downloads
-
-REPO_DIR="suckless-dot"
-REPO_URL="https://github.com/supplefrog/suckless-dot.git"
 
 check_repo_integrity() {
     cd "$REPO_DIR"
