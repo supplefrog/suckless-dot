@@ -23,32 +23,33 @@ echo "Updating font cache..."
 sudo fc-cache -fv
 
 # Detect package manager
+PKG_MGR=""
+INSTALL_CMD=""
+PKG_LIST=""
 REPO_CMD=""
 
 if command -v apt &> /dev/null; then
     PKG_MGR="apt"
-    INSTALL="sudo apt install -y"
-    # Same repository enabling logic as before (see APT section)
-    sudo add-apt-repository -y universe || true
-    sudo add-apt-repository -y multiverse || true
-    sudo add-apt-repository -y backports || true
-    sudo apt update
+    INSTALL_CMD="sudo apt install -y"
+    PKG_LIST="xorg xorg-dev xserver-xorg libcurl4-openssl-dev libx11-dev libxft-dev libxinerama-dev libxrandr-dev libxcb1-dev libxt-dev gcc git make pkg-config dmenu vifm"
 elif command -v pacman &> /dev/null; then
     PKG_MGR="pacman"
-    INSTALL="sudo pacman -Syu --noconfirm"
-    
-    # Check if an AUR helper like yay or paru is installed
+    INSTALL_CMD="sudo pacman -Syu --noconfirm"
+    PKG_LIST="xorg xorg-xinit xorg-server libcurl-compat libx11 libxft libxinerama libxrandr libxcb libxt gcc git make pkgconf dmenu vifm"
+    # Ensure yay (AUR helper) is available for Arch-based systems
     if ! command -v yay &> /dev/null; then
         echo "AUR helper (yay) not found. Installing yay..."
         sudo pacman -S --noconfirm yay
     fi
 elif command -v dnf &> /dev/null; then
     PKG_MGR="dnf"
-    INSTALL="sudo dnf install -y"
+    INSTALL_CMD="sudo dnf install -y"
+    PKG_LIST="xorg-x11-server-Xorg libcurl-devel libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel gcc git make pkgconf dmenu vifm"
     REPO_CMD="sudo dnf install -y epel-release"
 elif command -v yum &> /dev/null; then
     PKG_MGR="yum"
-    INSTALL="sudo yum install -y"
+    INSTALL_CMD="sudo yum install -y"
+    PKG_LIST="xorg-x11-server-Xorg libcurl-devel libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel gcc git make pkgconf dmenu vifm"
     REPO_CMD="sudo yum install -y epel-release"
 else
     echo "Unsupported package manager."
@@ -57,7 +58,7 @@ fi
 
 echo "Using package manager: $PKG_MGR"
 
-# Ensure required repos are installed
+# Ensure EPEL repo is installed for RHEL-based systems (if needed)
 if [ -n "$REPO_CMD" ]; then
     echo "Checking for necessary repositories..."
     if ! sudo dnf repolist | grep -q "epel"; then
@@ -66,28 +67,9 @@ if [ -n "$REPO_CMD" ]; then
     fi
 fi
 
+# Installing required packages
 echo "Installing required packages..."
-$INSTALL \
-    xorg \
-    xorg-xinit \
-    xorg-xrandr \
-    xorg-xdpyinfo \
-    xorg-fonts-100dpi \
-    xorg-fonts-75dpi \
-    xorg-fonts-misc \
-    libcurl-devel \
-    libX11-devel \
-    libXft-devel \
-    libXinerama-devel \
-    libXrandr-devel \
-    libxcb-devel \
-    libXt-devel \
-    gcc \
-    git \
-    make \
-    pkgconf \
-    dmenu \
-    vifm
+$INSTALL_CMD $PKG_LIST
 
 sudo chmod +x update_git_version.sh
 ./update_git_version.sh
