@@ -6,7 +6,7 @@ set -euo pipefail
 REPO_NAMES=("dwm" "st" "feh")
 REPO_URLS=(
     "https://git.suckless.org/dwm"
-    "https://git.suckless.org/st"
+    "git://git.suckless.org/st"
     "https://github.com/derf/feh.git"
 )
 REPO_DIRS=(
@@ -27,12 +27,13 @@ echo "Installing dependencies..."
 
     echo "Copying dot files..."
     source "$(dirname "$0")/dot.sh"
+
+    # Clone repositories and run integrity checks
+    for i in "${!REPO_NAMES[@]}"; do
+        sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
+    done
 } || {
-  echo "Error encountered while installing dependencies, continuing..."
-}
-# Clone repositories and run integrity checks
-for i in "${!REPO_NAMES[@]}"; do
-    sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
-done
+  echo "Exception encountered while installing dependencies, continuing..."
+}    
 
 echo "Installation Complete!"
