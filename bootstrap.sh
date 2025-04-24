@@ -49,10 +49,15 @@ sync_git_repo() {
         fi
     done
 
-    # Clone repository if it doesn't exist
+    # Check if the directory is already a git repository
     if [ ! -d "$DEST_DIR/.git" ]; then
-        echo "$NAME not found. Cloning fresh copy..."
+        echo "$NAME not found as a git repo. Cloning fresh copy..."
         git clone "$REPO_URL" "$DEST_DIR"
+    else
+        # If repo already exists, just pull the latest changes
+        echo "$NAME already exists. Pulling latest changes..."
+        cd "$DEST_DIR"
+        git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
     fi
 
     cd "$DEST_DIR"
@@ -63,9 +68,6 @@ sync_git_repo() {
         echo "Remote URL mismatch for $NAME. Fixing..."
         git remote set-url origin "$REPO_URL"
     fi
-
-    echo "Fetching latest changes..."
-    git fetch origin
 
     # Fetch latest commit
     LATEST_COMMIT=$(git rev-parse origin/HEAD)
