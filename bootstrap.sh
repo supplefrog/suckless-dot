@@ -27,12 +27,12 @@ sync_git_repo() {
     BUILD_CMD="$4"  # Optional command to run after pulling
     LAST_BUILD_FILE="$DEST_DIR/.last_build_commit"
     
-    # List of files and directories to exclude (dotfiles and folders)
+    # List of pre-existing files and directories to exclude (dotfiles and folders)
     EXCLUDE_FILES=(
         "config.def.h"
         "config.h"
         "bg"
-        # Add any other files or directories to exclude here
+        # Add any other dotfiles or directories to exclude here
     )
 
     echo "==> Syncing $NAME from $REPO_URL"
@@ -54,8 +54,17 @@ sync_git_repo() {
         fi
     done
 
-    # Ensure files are marked as assume-unchanged to prevent git from modifying them
-    echo "Marking excluded files as assume-unchanged..."
+    # Remove the pre-existing dotfiles from Git's tracking (if they are tracked)
+    echo "Removing pre-existing dotfiles from Git's index (if tracked)..."
+    for file in "${EXCLUDE_FILES[@]}"; do
+        if [ -f "$file" ]; then
+            git rm --cached "$file"  # Removes from index but not from the filesystem
+            echo "Removed $file from Git's index"
+        fi
+    done
+
+    # Mark the pre-existing dotfiles as "assume-unchanged" to prevent Git from overwriting them
+    echo "Marking pre-existing dotfiles as assume-unchanged..."
     for file in "${EXCLUDE_FILES[@]}"; do
         if [ -f "$file" ]; then
             git update-index --assume-unchanged "$file"
