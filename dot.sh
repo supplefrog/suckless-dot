@@ -22,7 +22,7 @@ for dir in feh dwm st; do
 
         # If file already exists in the target directory, remove it
         if [ -e "$target" ]; then
-            rm -rf "$target"
+            rm -f "$target"
             echo "Replaced: $target"
         fi
 
