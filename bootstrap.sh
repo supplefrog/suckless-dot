@@ -26,6 +26,14 @@ sync_git_repo() {
     DEST_DIR="$3"
     BUILD_CMD="$4"  # Optional command to run after pulling
     LAST_BUILD_FILE="$DEST_DIR/.last_build_commit"
+    
+    # List of files and directories to exclude (dotfiles and folders)
+    EXCLUDE_FILES=(
+        "config.def.h"
+        "config.h"
+        "bg"
+        # Add any other files or directories to exclude here
+    )
 
     echo "==> Syncing $NAME from $REPO_URL"
 
@@ -36,6 +44,14 @@ sync_git_repo() {
     fi
 
     cd "$DEST_DIR"
+
+    # Enable sparse-checkout
+    git sparse-checkout init --cone
+
+    # Add the exclude patterns for dotfiles and directories to sparse-checkout
+    for file in "${EXCLUDE_FILES[@]}"; do
+        git sparse-checkout set --skip-worktree "$file"
+    done
 
     # Ensure remote URL is correct
     CURRENT_REMOTE=$(git config --get remote.origin.url)
@@ -87,6 +103,7 @@ sync_git_repo() {
         git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
     fi
 }
+
 
 # Run detection immediately in bootstrap.sh
 detect_pkg_mgr
