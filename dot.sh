@@ -7,32 +7,18 @@ detect_pkg_mgr
 # Move user dotfiles (excluding . and ..)
 echo "Copying dotfiles to corresponding directories..."
 
-# Enable dotglob to include hidden files
+# Enable dotglob to include hidden files (dotfiles)
 shopt -s dotglob
 
-# List of directories to copy
-for dir in feh dwm st; do
-    src="$DOTFILES_DIR/home/e/.de/$dir"
-    dest="$HOME/.de/$dir"
+# Recursively copy all files from ~/.dotfiles/.de to ~/.de, including dotfiles
+echo "Copying dotfiles to corresponding directories..."
 
-    # Loop through files in the source directory
-    for file in "$src"/*; do
-        filename="$(basename "$file")"
-        target="$dest/$filename"
+cp -rf "$DOTFILES_DIR/home/e/.de/"* "$HOME/.de/"
 
-        # If the target file exists, skip it (we don't want to overwrite existing files)
-        if [ -e "$target" ]; then
-            echo "Skipping existing file: $target"
-        else
-            # If the target file does not exist, copy it forcefully
-            cp -f "$file" "$target"
-            echo "Copied: $target"
-        fi
-    done
-done
-
-# Disable dotglob
+# Disable dotglob to revert to default behavior
 shopt -u dotglob
+
+echo "Dot files transferred!"
 
 echo "Installing scripts to /usr/bin..."
 sudo cp -n "$DOTFILES_DIR/usr/bin/"* /usr/bin/
