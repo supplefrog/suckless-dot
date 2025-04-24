@@ -4,7 +4,7 @@ set -euo pipefail
 
 source "$(dirname "$0")/git_sync_utils.sh"
 
-# Clone repositories and run integrity checks
+# Repo variables
 REPO_NAMES=("suckless-dot" "dwm" "st" "feh")
 REPO_URLS=(
     "https://github.com/supplefrog/suckless-dot.git"
@@ -32,6 +32,7 @@ source "$(dirname "$0")/install_deps_src.sh"
 echo "Copying dot files..."
 source "$(dirname "$0")/dot.sh"
 
+# Clone repositories and run integrity checks
 for i in "${!REPO_NAMES[@]}"; do
     sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
 done
