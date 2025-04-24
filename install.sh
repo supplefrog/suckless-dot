@@ -26,10 +26,10 @@ for i in "${!REPO_DIRS[@]}"; do
     cd "$REPO"
 
     # Loop through all .diff files in the repo and apply them
-    for PATCH in "$REPO"/*.diff"; do
+    for PATCH in "$REPO"/*.diff; do
         if [[ -f "$PATCH" ]]; then
             echo "Applying patch: $PATCH"
-            patch -p1 < "$PATCH"
+            patch -p1 < "$PATCH" || { echo "Patch failed: $PATCH"; exit 1; }
         fi
     done
 
