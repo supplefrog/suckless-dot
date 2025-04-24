@@ -45,7 +45,7 @@ for i in "${!REPO_DIRS[@]}"; do
         done
     fi
     
-    cp config.def.h config.h
+    cp config.def.h config.h || echo "⚠️ cp config.def.h failed, continuing..."
     make clean
     eval "$CMD"
 done
