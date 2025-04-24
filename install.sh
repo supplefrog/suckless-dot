@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/git_sync_utils.sh"
+source "$(dirname "$0")/bootstrap.sh"
 
 # Repo variables
 REPO_NAMES=("dwm" "st" "feh")
