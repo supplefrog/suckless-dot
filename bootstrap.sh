@@ -2,7 +2,16 @@
 
 set -euo pipefail
 
-# Detect package manager and define install command
+# --- Config ---
+DOTFILES_DIR="$HOME/.dotfiles"
+SUCKLESS_REPOS=(
+    "dwm git://git.suckless.org/dwm $HOME/.de/dwm"
+    "st  git://git.suckless.org/st  $HOME/.de/st"
+    "feh https://github.com/derf/feh.git $HOME/.de/feh"
+)
+DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
+
+# --- Functions ---
 detect_pkg_mgr() {
     if command -v apt &> /dev/null; then
         PKG_MGR="apt"
@@ -22,78 +31,48 @@ detect_pkg_mgr() {
     fi
 }
 
-# Ensure essential packages are available
 install_essentials() {
     echo "Installing essential packages (git, curl)..."
-
-    if ! command -v git &> /dev/null; then
-        echo "Git not found. Installing..."
-        $INSTALL_CMD git
-    fi
-
-    if ! command -v curl &> /dev/null; then
-        echo "Curl not found. Installing..."
-        $INSTALL_CMD curl
-    fi
+    if ! command -v git &> /dev/null; then $INSTALL_CMD git; fi
+    if ! command -v curl &> /dev/null; then $INSTALL_CMD curl; fi
 }
 
-# Clone function (without building yet)
 clone_repos() {
-    echo "==> Cloning repositories..."
+    echo "==> Cloning suckless repositories..."
 
-    declare -a REPO_NAMES=("dwm" "st" "feh")
-    declare -a REPO_URLS=(
-        "git://git.suckless.org/dwm"
-        "git://git.suckless.org/st"
-        "https://github.com/derf/feh.git"
-    )
-    declare -a REPO_DIRS=(
-        "$HOME/.de/dwm"
-        "$HOME/.de/st"
-        "$HOME/.de/feh"
-    )
-
-    for i in "${!REPO_NAMES[@]}"; do
-        NAME="${REPO_NAMES[$i]}"
-        URL="${REPO_URLS[$i]}"
-        DIR="${REPO_DIRS[$i]}"
-
+    for entry in "${SUCKLESS_REPOS[@]}"; do
+        read -r NAME URL DIR <<< "$entry"
         echo "-> Handling $NAME..."
 
         if [[ ! -d "$DIR" ]]; then
             echo "Cloning $NAME into $DIR..."
-            git clone "$URL" "$DIR"
+            git clone --depth=1 "$URL" "$DIR"
         elif [[ -d "$DIR/.git" ]]; then
             echo "$NAME repo exists. Pulling latest changes..."
-            git -C "$DIR" pull --rebase --autostash || echo "⚠️ Failed to pull $NAME, continuing anyway."
+            git -C "$DIR" pull --rebase --autostash || echo "⚠️ Pull failed for $NAME, continuing."
         else
             echo "⚠️ $DIR exists but is not a git repo. Skipping $NAME."
         fi
     done
 
-    # Dotfiles repo
-    DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
-    DOTFILES_DIR="$HOME/Downloads/suckless-dot"
-
     echo "-> Handling dotfiles repo..."
-
     if [[ ! -d "$DOTFILES_DIR" ]]; then
         echo "Cloning dotfiles..."
-        git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+        git clone --depth=1 "$DOTFILES_REPO" "$DOTFILES_DIR"
     elif [[ -d "$DOTFILES_DIR/.git" ]]; then
         echo "Updating dotfiles repo..."
-        git -C "$DOTFILES_DIR" pull --rebase --autostash || echo "⚠️ Failed to pull dotfiles, continuing anyway."
+        git -C "$DOTFILES_DIR" pull --rebase --autostash || echo "⚠️ Pull failed for dotfiles, continuing."
     else
         echo "⚠️ $DOTFILES_DIR exists but is not a git repo. Skipping dotfiles."
     fi
 }
 
-# --- MAIN SCRIPT EXECUTION ---
+# --- Run ---
 detect_pkg_mgr
 install_essentials
 clone_repos
 
-# Move dot files and install builds
-source "$(dirname "$0")/install_deps.sh"
-source "$(dirname "$0")/install_deps_src.sh"
-source "$(dirname "$0")/install.sh"
+# Source install scripts from dotfiles repo
+source "$DOTFILES_DIR/install_deps.sh"
+source "$DOTFILES_DIR/install_deps_src.sh"
+source "$DOTFILES_DIR/install.sh"
