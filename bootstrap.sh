@@ -5,19 +5,15 @@ detect_pkg_mgr() {
     if command -v apt &> /dev/null; then
         PKG_MGR="apt"
         INSTALL_CMD="sudo apt install -y"
-        REPO_CMD=""
     elif command -v pacman &> /dev/null; then
         PKG_MGR="pacman"
         INSTALL_CMD="sudo pacman -Syu --noconfirm"
-        REPO_CMD=""
     elif command -v dnf &> /dev/null; then
         PKG_MGR="dnf"
         INSTALL_CMD="sudo dnf install -y"
-        REPO_CMD="sudo dnf install -y epel-release"
     elif command -v yum &> /dev/null; then
         PKG_MGR="yum"
         INSTALL_CMD="sudo yum install -y"
-        REPO_CMD="sudo yum install -y epel-release"
     else
         echo "Unsupported package manager."
         exit 1
