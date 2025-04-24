@@ -21,9 +21,22 @@ BUILD_CMDS=(
 for i in "${!REPO_DIRS[@]}"; do
     REPO="${REPO_DIRS[$i]}"
     CMD="${BUILD_CMDS[$i]}"
-
+    
     echo "==> Building: $REPO"
+    
     cd "$REPO"
+    
+    for PATCH in *.diff; do
+    if [[ -f "$PATCH" ]]; then
+        echo "Applying patch: $PATCH"
+        patch -p1 < "$PATCH"
+    fi
+    done
+
+    cp config.def.h config.h
+    
+    make clean
+    
     eval "$CMD"
 done
 
