@@ -3,12 +3,12 @@
 set -euo pipefail
 
 # --- Config ---
-DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
 DOTFILES_DIR="$HOME/.dotfiles"
-SUCKLESS_REPOS=(
+REPOS=(
     "dwm git://git.suckless.org/dwm $HOME/.de/dwm"
     "st  git://git.suckless.org/st  $HOME/.de/st"
     "feh https://github.com/derf/feh.git $HOME/.de/feh"
+    "dot https://github.com/supplefrog/suckless-dot.git $DOTFILES_DIR"
 )
 
 # --- Functions ---
@@ -38,9 +38,9 @@ install_essentials() {
 }
 
 clone_repos() {
-    echo "==> Cloning suckless repositories..."
+    echo "==> Cloning repositories..."
 
-    for entry in "${SUCKLESS_REPOS[@]}"; do
+    for entry in "${REPOS[@]}"; do
         read -r NAME URL DIR <<< "$entry"
         echo "-> Handling $NAME..."
 
@@ -54,17 +54,6 @@ clone_repos() {
             echo "⚠️ $DIR exists but is not a git repo. Skipping $NAME."
         fi
     done
-
-    echo "-> Handling dotfiles repo..."
-    if [[ ! -d "$DOTFILES_DIR" ]]; then
-        echo "Cloning dotfiles..."
-        git clone --depth=1 "$DOTFILES_REPO" "$DOTFILES_DIR"
-    elif [[ -d "$DOTFILES_DIR/.git" ]]; then
-        echo "Updating dotfiles repo..."
-        git -C "$DOTFILES_DIR" pull --rebase --autostash || echo "⚠️ Pull failed for dotfiles, continuing."
-    else
-        echo "⚠️ $DOTFILES_DIR exists but is not a git repo. Skipping dotfiles."
-    fi
 }
 
 # --- Run ---
