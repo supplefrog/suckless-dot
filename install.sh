@@ -21,8 +21,10 @@ REPO_BUILDS=(
 )
 
 echo "Installing dependencies..."
+set +e
 source "$(dirname "$0")/install_deps.sh"
 source "$(dirname "$0")/install_deps_src.sh"
+set -e
 
 echo "Copying dot files..."
 source "$(dirname "$0")/dot.sh"
