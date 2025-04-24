@@ -1,9 +1,7 @@
 #!/bin/bash
 
+# Detect package manager and define install command
 detect_pkg_mgr() {
-    PKG_MGR=""
-    INSTALL_CMD=""
-    
     if command -v apt &> /dev/null; then
         PKG_MGR="apt"
         INSTALL_CMD="sudo apt install -y"
@@ -22,19 +20,20 @@ detect_pkg_mgr() {
     fi
 }
 
+# Run detection immediately in bootstrap.sh
+detect_pkg_mgr
 
+echo "Using package manager: $PKG_MGR"
 echo "Installing essential packages (git, curl)..."
 
-# Check and install git if missing
 if ! command -v git &> /dev/null; then
     echo "Git not found. Installing Git..."
     $INSTALL_CMD git
 fi
 
-# Check and install curl if missing
 if ! command -v curl &> /dev/null; then
     echo "Curl not found. Installing Curl..."
     $INSTALL_CMD curl
 fi
 
-# Add any other essential package installations here
+echo "Essential packages installed. Ready to clone the repo and continue setup."
