@@ -26,17 +26,26 @@ for i in "${!REPO_DIRS[@]}"; do
     
     cd "$REPO"
     
-    for PATCH in *.diff; do
-    if [[ -f "$PATCH" ]]; then
-        echo "Applying patch: $PATCH"
-        patch -p1 < "$PATCH"
+    # Apply patches in a specific order for 'st' repository
+    if [[ "$REPO" == *"st"* ]]; then
+        for PATCH in st-anysize.diff st-ringbuffer.diff st-floatingpoint.diff; do
+            if [[ -f "$PATCH" ]]; then
+                echo "Applying patch: $PATCH"
+                patch -p1 < "$PATCH"
+            fi
+        done
+        cp config.def.h config.h
+    else
+        # Apply patches in alphabetical order for other repositories
+        for PATCH in *.diff; do
+            if [[ -f "$PATCH" ]]; then
+                echo "Applying patch: $PATCH"
+                patch -p1 < "$PATCH"
+            fi
+        done
     fi
-    done
 
-    cp config.def.h config.h
-    
     make clean
-    
     eval "$CMD"
 done
 
