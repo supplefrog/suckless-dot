@@ -36,7 +36,7 @@ install_essentials() {
     if ! command -v git &> /dev/null; then $INSTALL_CMD git; fi
     if ! command -v curl &> /dev/null; then $INSTALL_CMD curl; fi
 }
-# todo: improve the cloning logic to verify recursively and download only missing or corrupt files
+# todo: improve the cloning logic to verify files recursively and download only missing or corrupt files
 clone_repos() {
     echo "==> Cloning repositories..."
 
