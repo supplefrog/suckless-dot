@@ -50,7 +50,7 @@ sync_git_repo() {
 
     # Add the exclude patterns for dotfiles and directories to sparse-checkout
     for file in "${EXCLUDE_FILES[@]}"; do
-        git sparse-checkout set --skip-worktree "$file"
+        git sparse-checkout set "$file" || echo "Failed to set sparse-checkout for $file"
     done
 
     # Also mark the excluded files as assume-unchanged
