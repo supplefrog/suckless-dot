@@ -20,14 +20,13 @@ for dir in feh dwm st; do
         filename="$(basename "$file")"
         target="$dest/$filename"
 
-        # If the target is a file and exists, overwrite it
-        if [ -e "$target" ] && [ ! -d "$target" ]; then
-            cp -f "$file" "$target"  # Force overwrite if it's a file
-            echo "Replaced file: $target"
-        elif [ ! -e "$target" ]; then
-            # Copy file if it does not exist in the target
-            cp -r "$file" "$target"
-            echo "Copied new file: $target"
+        # If the target file exists, skip it (we don't want to overwrite existing files)
+        if [ -e "$target" ]; then
+            echo "Skipping existing file: $target"
+        else
+            # If the target file does not exist, copy it forcefully
+            cp -f "$file" "$target"
+            echo "Copied: $target"
         fi
     done
 done
