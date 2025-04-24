@@ -103,6 +103,7 @@ sync_git_repo() {
 
     # Cleanup backup directory after restoring
     rm -rf "$BACKUP_DIR"
+    echo "Cleaned up backup directory."
 
     echo "$NAME sync completed without overwriting local dotfiles."
 }
