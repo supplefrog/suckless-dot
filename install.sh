@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/dot.sh"
+source "$DOTFILES_DIR/dot.sh"
 
 # Build suckless software
 echo "==> Building repositories..."
