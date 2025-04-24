@@ -36,3 +36,5 @@ source "$(dirname "$0")/dot.sh"
 for i in "${!REPO_NAMES[@]}"; do
     sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
 done
+
+echo "Installation Complete!"
