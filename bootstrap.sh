@@ -54,6 +54,15 @@ sync_git_repo() {
         fi
     done
 
+    # Ensure files are marked as assume-unchanged to prevent git from modifying them
+    echo "Marking excluded files as assume-unchanged..."
+    for file in "${EXCLUDE_FILES[@]}"; do
+        if [ -f "$file" ]; then
+            git update-index --assume-unchanged "$file"
+            echo "Marked $file as assume-unchanged"
+        fi
+    done
+
     # Ensure remote URL is correct
     CURRENT_REMOTE=$(git config --get remote.origin.url)
     if [[ "$CURRENT_REMOTE" != "$REPO_URL" ]]; then
