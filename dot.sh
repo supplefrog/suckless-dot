@@ -6,7 +6,6 @@ detect_pkg_mgr
 
 # Move configuration files to their respective locations
 echo "Moving configuration files..."
-sudo mv -n "$HOME/Downloads/suckless-dot/etc/*" /etc || true
 sudo mv -n "$HOME/Downloads/suckless-dot/home/e/*" ~ || true
 sudo mv -n "$HOME/Downloads/suckless-dot/usr/bin/*" /usr/bin || true
 sudo mv -n "$HOME/Downloads/suckless-dot/usr/share/*" /usr/share || true
