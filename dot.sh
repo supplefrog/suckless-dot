@@ -7,7 +7,7 @@ detect_pkg_mgr
 # Move user dotfiles (excluding . and ..)
 echo "Copying dotfiles to home directory..."
 shopt -s dotglob nullglob
-for file in "$DOTFILES/home/e/"*; do
+for file in "$DOTFILES_DIR/home/e/"*; do
     filename="$(basename "$file")"
     if [ ! -e "$HOME/$filename" ]; then
         cp -r "$file" "$HOME/"
@@ -19,10 +19,10 @@ done
 shopt -u dotglob nullglob
 
 echo "Installing scripts to /usr/bin..."
-sudo cp -n "$DOTFILES/usr/bin/"* /usr/bin/
+sudo cp -n "$DOTFILES_DIR/usr/bin/"* /usr/bin/
 
 echo "Installing shared files to /usr/share..."
-sudo cp -rn "$DOTFILES/usr/share/"* /usr/share/
+sudo cp -rn "$DOTFILES_DIR/usr/share/"* /usr/share/
 
 echo "Setting executable permission on dwm startup script..."
 sudo chmod +x "$HOME/.de/dwm/de.sh"
