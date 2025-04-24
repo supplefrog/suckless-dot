@@ -32,6 +32,7 @@ for i in "${!REPO_DIRS[@]}"; do
             patch -p1 < "$PATCH" || { echo "Patch failed: $PATCH"; exit 1; }
         fi
     done
+    make clean
 
     eval "$CMD"
 done
