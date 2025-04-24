@@ -14,9 +14,9 @@ REPO_URLS=(
 )
 REPO_DIRS=(
     "$HOME/Downloads/suckless-dot"
-    "$HOME/DE/dwm"
-    "$HOME/DE/st"
-    "$HOME/DE/feh"
+    "$HOME/.de/dwm"
+    "$HOME/.de/st"
+    "$HOME/.de/feh"
 )
 REPO_BUILDS=(
     ""  # No build for suckless-dot
