@@ -26,4 +26,4 @@ for i in "${!REPO_DIRS[@]}"; do
     eval "${BUILD_CMDS[$i]}"
 done
 
-echo "Installation and build complete!"
+echo "Build and install complete!"
