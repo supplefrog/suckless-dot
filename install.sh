@@ -2,10 +2,7 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/pkg_manager_utils.sh"
 source "$(dirname "$0")/git_sync_utils.sh"
-
-install_essential_packages
 
 # Clone repositories and run integrity checks
 REPO_NAMES=("suckless-dot" "dwm" "st" "feh")
