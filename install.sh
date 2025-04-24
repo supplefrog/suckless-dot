@@ -44,7 +44,8 @@ for i in "${!REPO_DIRS[@]}"; do
             fi
         done
     fi
-
+    
+    cp config.def.h config.h
     make clean
     eval "$CMD"
 done
