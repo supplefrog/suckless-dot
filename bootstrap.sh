@@ -3,13 +3,13 @@
 set -euo pipefail
 
 # --- Config ---
+DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
 DOTFILES_DIR="$HOME/.dotfiles"
 SUCKLESS_REPOS=(
     "dwm git://git.suckless.org/dwm $HOME/.de/dwm"
     "st  git://git.suckless.org/st  $HOME/.de/st"
     "feh https://github.com/derf/feh.git $HOME/.de/feh"
 )
-DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
 
 # --- Functions ---
 detect_pkg_mgr() {
