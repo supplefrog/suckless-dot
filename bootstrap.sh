@@ -61,7 +61,7 @@ detect_pkg_mgr
 install_essentials
 clone_repos
 
-# Source install scripts from dotfiles repo
+# Source install scripts from repo
 source "$DOTFILES_DIR/install_deps.sh"
 source "$DOTFILES_DIR/install_deps_src.sh"
 source "$DOTFILES_DIR/install.sh"
