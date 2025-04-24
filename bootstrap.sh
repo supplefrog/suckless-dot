@@ -58,25 +58,33 @@ clone_repos() {
         URL="${REPO_URLS[$i]}"
         DIR="${REPO_DIRS[$i]}"
 
-        if [[ ! -d "$DIR/.git" ]]; then
+        echo "-> Handling $NAME..."
+
+        if [[ ! -d "$DIR" ]]; then
             echo "Cloning $NAME into $DIR..."
             git clone "$URL" "$DIR"
+        elif [[ -d "$DIR/.git" ]]; then
+            echo "$NAME repo exists. Pulling latest changes..."
+            git -C "$DIR" pull --rebase --autostash || echo "⚠️ Failed to pull $NAME, continuing anyway."
         else
-            echo "$NAME already exists, pulling latest changes..."
-            cd "$DIR" && git pull --rebase --autostash
+            echo "⚠️ $DIR exists but is not a git repo. Skipping $NAME."
         fi
     done
 
-    # Clone the dotfile repo if not present
+    # Dotfiles repo
     DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
     DOTFILES_DIR="$HOME/Downloads/suckless-dot"
 
-    if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
-        echo "Cloning dotfiles repo..."
+    echo "-> Handling dotfiles repo..."
+
+    if [[ ! -d "$DOTFILES_DIR" ]]; then
+        echo "Cloning dotfiles..."
         git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+    elif [[ -d "$DOTFILES_DIR/.git" ]]; then
+        echo "Updating dotfiles repo..."
+        git -C "$DOTFILES_DIR" pull --rebase --autostash || echo "⚠️ Failed to pull dotfiles, continuing anyway."
     else
-        echo "Dotfiles repo already exists. Pulling updates..."
-        cd "$DOTFILES_DIR" && git pull --rebase --autostash
+        echo "⚠️ $DOTFILES_DIR exists but is not a git repo. Skipping dotfiles."
     fi
 }
 
