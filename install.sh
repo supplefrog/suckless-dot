@@ -19,9 +19,21 @@ BUILD_CMDS=(
 )
 
 for i in "${!REPO_DIRS[@]}"; do
-    echo "Building: ${REPO_DIRS[$i]}"
-    cd "${REPO_DIRS[$i]}"
-    eval "${BUILD_CMDS[$i]}"
+    REPO="${REPO_DIRS[$i]}"
+    CMD="${BUILD_CMDS[$i]}"
+
+    echo "==> Building: $REPO"
+    cd "$REPO"
+
+    # Loop through all .diff files in the repo and apply them
+    for PATCH in *.diff; do
+        if [[ -f "$PATCH" ]]; then
+            echo "Applying patch: $PATCH"
+            patch -p1 < "$PATCH"
+        fi
+    done
+
+    eval "$CMD"
 done
 
-echo "Build and install complete!"
+echo "✅ Build and install complete!"
