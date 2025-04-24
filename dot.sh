@@ -5,17 +5,36 @@ set -euo pipefail
 detect_pkg_mgr
 
 # Move user dotfiles (excluding . and ..)
-echo "Copying dotfiles to home directory..."
+echo "Copying dotfiles to corresponding directories..."
+
 shopt -s dotglob nullglob
-for file in "$DOTFILES_DIR/home/e/"*; do
-    filename="$(basename "$file")"
-    if [ ! -e "$HOME/$filename" ]; then
-        cp -r "$file" "$HOME/"
-        echo "Copied: $filename"
-    else
-        echo "Skipped (already exists): $filename"
-    fi
-done
+
+# Function to copy dotfiles
+copy_dotfiles() {
+    local src="$1"
+    local dest="$2"
+
+    for file in "$src"/*; do
+        local filename="$(basename "$file")"
+        local target="$dest/$filename"
+
+        if [ -d "$file" ]; then
+            mkdir -p "$target"
+            copy_dotfiles "$file" "$target"
+        elif [ ! -e "$target" ]; then
+            cp -r "$file" "$target"
+            echo "Copied: $target"
+        else
+            echo "Skipped (already exists): $target"
+        fi
+    done
+}
+
+# Copy files into their respective directories
+copy_dotfiles "$DOTFILES_DIR/home/e/.de/feh" "$HOME/.de/feh"
+copy_dotfiles "$DOTFILES_DIR/home/e/.de/dwm" "$HOME/.de/dwm"
+copy_dotfiles "$DOTFILES_DIR/home/e/.de/st" "$HOME/.de/st"
+
 shopt -u dotglob nullglob
 
 echo "Installing scripts to /usr/bin..."
