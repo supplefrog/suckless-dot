@@ -45,18 +45,12 @@ sync_git_repo() {
 
     cd "$DEST_DIR"
 
-    # Enable sparse-checkout
-    git sparse-checkout init --cone
-
-    # Add the exclude patterns for dotfiles and directories to sparse-checkout
+    # Ensure .gitignore exists and add the exclude files to it
+    echo "Ensuring .gitignore includes the exclude files..."
     for file in "${EXCLUDE_FILES[@]}"; do
-        git sparse-checkout set "$file" || echo "Failed to set sparse-checkout for $file"
-    done
-
-    # Also mark the excluded files as assume-unchanged
-    for file in "${EXCLUDE_FILES[@]}"; do
-        if [ -f "$file" ]; then
-            git update-index --assume-unchanged "$file"
+        if ! grep -q "^$file$" .gitignore; then
+            echo "$file" >> .gitignore
+            echo "Added $file to .gitignore"
         fi
     done
 
@@ -84,6 +78,32 @@ sync_git_repo() {
     else
         echo "No corruption detected in $NAME."
     fi
+
+    # Fetch latest commit
+    LATEST_COMMIT=$(git rev-parse origin/HEAD)
+
+    # Handle build logic (only rebuild if the commit has changed)
+    if [[ -n "$BUILD_CMD" ]]; then
+        # Check if the commit has been built previously
+        if [[ -f "$LAST_BUILD_FILE" ]] && grep -q "$LATEST_COMMIT" "$LAST_BUILD_FILE"; then
+            echo "$NAME is already built at $LATEST_COMMIT. Skipping rebuild."
+            return
+        fi
+
+        echo "Checking out latest commit for $NAME..."
+        git checkout "$LATEST_COMMIT"
+
+        echo "Running build for $NAME..."
+        eval "$BUILD_CMD"
+
+        # Update the last build commit file
+        echo "$LATEST_COMMIT" > "$LAST_BUILD_FILE"
+    else
+        # Just pull the latest changes without rebuilding
+        echo "Pulling latest changes for $NAME..."
+        git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
+    fi
+}
 
     # Fetch latest commit
     LATEST_COMMIT=$(git rev-parse origin/HEAD)
