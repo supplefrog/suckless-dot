@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-# Call dotfile setup
-echo "==> Running dotfile setup..."
 source "$(dirname "$0")/dot.sh"
 
 # Build suckless software
