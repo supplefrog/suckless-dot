@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-# Source the package manager utilities
-source "$(dirname "$0")/bootstrap.sh"
 detect_pkg_mgr
 
 # List of packages to install
