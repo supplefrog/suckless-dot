@@ -105,32 +105,6 @@ sync_git_repo() {
     fi
 }
 
-    # Fetch latest commit
-    LATEST_COMMIT=$(git rev-parse origin/HEAD)
-
-    # Handle build logic (only rebuild if the commit has changed)
-    if [[ -n "$BUILD_CMD" ]]; then
-        # Check if the commit has been built previously
-        if [[ -f "$LAST_BUILD_FILE" ]] && grep -q "$LATEST_COMMIT" "$LAST_BUILD_FILE"; then
-            echo "$NAME is already built at $LATEST_COMMIT. Skipping rebuild."
-            return
-        fi
-
-        echo "Checking out latest commit for $NAME..."
-        git checkout "$LATEST_COMMIT"
-
-        echo "Running build for $NAME..."
-        eval "$BUILD_CMD"
-
-        # Update the last build commit file
-        echo "$LATEST_COMMIT" > "$LAST_BUILD_FILE"
-    else
-        # Just pull the latest changes without rebuilding
-        echo "Pulling latest changes for $NAME..."
-        git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
-    fi
-}
-
 # Run detection immediately in bootstrap.sh
 detect_pkg_mgr
 
