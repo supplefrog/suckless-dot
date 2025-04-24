@@ -85,5 +85,7 @@ detect_pkg_mgr
 install_essentials
 clone_repos
 
-# Run the next stage (dotfiles + builds)
+# Move dot files and install builds
+source "$(dirname "$0")/install_deps.sh"
+source "$(dirname "$0")/install_deps_src.sh"
 source "$(dirname "$0")/install.sh"
