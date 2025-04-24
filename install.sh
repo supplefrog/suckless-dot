@@ -34,7 +34,7 @@ for i in "${!REPO_DIRS[@]}"; do
     done
     make clean
 
-    eval "$CMD"
+    $CMD
 done
 
 echo "✅ Build and install complete!"
