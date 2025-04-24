@@ -29,12 +29,15 @@ for i in "${!REPO_DIRS[@]}"; do
     for PATCH in "$REPO"/*.diff; do
         if [[ -f "$PATCH" ]]; then
             echo "Applying patch: $PATCH"
-            patch -p1 < "$PATCH" || { echo "Patch failed: $PATCH"; exit 1; }
+            patch -p1 < "$PATCH"
         fi
     done
+    
+    [ -f config.h ] || cp config.def.h config.h
+    
     make clean
 
-    $CMD
+    eval "$CMD"
 done
 
 echo "✅ Build and install complete!"
