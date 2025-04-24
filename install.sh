@@ -21,9 +21,12 @@ REPO_BUILDS=(
 )
 
 echo "Installing dependencies..."
-source "$(dirname "$0")/install_deps.sh"
-source "$(dirname "$0")/install_deps_src.sh"
-
+{
+  source "$(dirname "$0")/install_deps.sh"
+  source "$(dirname "$0")/install_deps_src.sh"
+} || {
+  echo "Error encountered while installing dependencies, continuing..."
+}
 echo "Copying dot files..."
 source "$(dirname "$0")/dot.sh"
 
