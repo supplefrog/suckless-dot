@@ -24,19 +24,6 @@ for i in "${!REPO_DIRS[@]}"; do
 
     echo "==> Building: $REPO"
     cd "$REPO"
-
-    # Loop through all .diff files in the repo and apply them
-    for PATCH in "$REPO"/*.diff; do
-        if [[ -f "$PATCH" ]]; then
-            echo "Applying patch: $PATCH"
-            patch -p1 < "$PATCH"
-        fi
-    done
-    
-    [ -f config.h ] || cp config.def.h config.h
-    
-    make clean
-
     eval "$CMD"
 done
 
