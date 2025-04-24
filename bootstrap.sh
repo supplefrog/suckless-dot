@@ -32,10 +32,22 @@ sync_git_repo() {
         "config.def.h"
         "config.h"
         "bg"
-        # Add any other dotfiles or directories to exclude here
+        # Add any other dotfiles or files to exclude here
     )
 
     echo "==> Syncing $NAME from $REPO_URL"
+
+    # Backup pre-existing files that could be overwritten
+    BACKUP_DIR="$DEST_DIR/backup_dotfiles"
+    mkdir -p "$BACKUP_DIR"
+    
+    echo "Backing up pre-existing dotfiles..."
+    for file in "${EXCLUDE_FILES[@]}"; do
+        if [ -e "$DEST_DIR/$file" ]; then
+            mv "$DEST_DIR/$file" "$BACKUP_DIR/"
+            echo "Moved $file to backup directory."
+        fi
+    done
 
     # Clone repository if it doesn't exist
     if [ ! -d "$DEST_DIR/.git" ]; then
@@ -44,33 +56,6 @@ sync_git_repo() {
     fi
 
     cd "$DEST_DIR"
-
-    # Ensure .gitignore exists and add the exclude files to it
-    echo "Ensuring .gitignore includes the exclude files..."
-    for file in "${EXCLUDE_FILES[@]}"; do
-        if ! grep -q "^$file$" .gitignore; then
-            echo "$file" >> .gitignore
-            echo "Added $file to .gitignore"
-        fi
-    done
-
-    # Remove the pre-existing dotfiles from Git's tracking (if they are tracked)
-    echo "Removing pre-existing dotfiles from Git's index (if tracked)..."
-    for file in "${EXCLUDE_FILES[@]}"; do
-        if [ -f "$file" ]; then
-            git rm --cached "$file"  # Removes from index but not from the filesystem
-            echo "Removed $file from Git's index"
-        fi
-    done
-
-    # Mark the pre-existing dotfiles as "assume-unchanged" to prevent Git from overwriting them
-    echo "Marking pre-existing dotfiles as assume-unchanged..."
-    for file in "${EXCLUDE_FILES[@]}"; do
-        if [ -f "$file" ]; then
-            git update-index --assume-unchanged "$file"
-            echo "Marked $file as assume-unchanged"
-        fi
-    done
 
     # Ensure remote URL is correct
     CURRENT_REMOTE=$(git config --get remote.origin.url)
@@ -81,21 +66,6 @@ sync_git_repo() {
 
     echo "Fetching latest changes..."
     git fetch origin
-
-    echo "Checking for file corruption..."
-    CORRUPT_FILES=$(git fsck --full 2>&1 | grep 'missing blob' | awk '{ print $3 }')
-    if [[ -n "$CORRUPT_FILES" ]]; then
-        echo "Corrupt or missing files found in $NAME. Attempting to restore..."
-        for hash in $CORRUPT_FILES; do
-            FILE=$(git rev-list --all --objects | grep "$hash" | awk '{print $2}')
-            if [[ -n "$FILE" ]]; then
-                echo "Restoring $FILE..."
-                git checkout origin/HEAD -- "$FILE"
-            fi
-        done
-    else
-        echo "No corruption detected in $NAME."
-    fi
 
     # Fetch latest commit
     LATEST_COMMIT=$(git rev-parse origin/HEAD)
@@ -121,6 +91,20 @@ sync_git_repo() {
         echo "Pulling latest changes for $NAME..."
         git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
     fi
+
+    # Restore the backed-up dotfiles
+    echo "Restoring pre-existing dotfiles from backup..."
+    for file in "${EXCLUDE_FILES[@]}"; do
+        if [ -e "$BACKUP_DIR/$file" ]; then
+            mv "$BACKUP_DIR/$file" "$DEST_DIR/"
+            echo "Restored $file from backup."
+        fi
+    done
+
+    # Cleanup backup directory after restoring
+    rm -rf "$BACKUP_DIR"
+
+    echo "$NAME sync completed without overwriting local dotfiles."
 }
 
 # Run detection immediately in bootstrap.sh
