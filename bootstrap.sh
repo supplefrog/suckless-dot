@@ -53,6 +53,13 @@ sync_git_repo() {
         git sparse-checkout set --skip-worktree "$file"
     done
 
+    # Also mark the excluded files as assume-unchanged
+    for file in "${EXCLUDE_FILES[@]}"; do
+        if [ -f "$file" ]; then
+            git update-index --assume-unchanged "$file"
+        fi
+    done
+
     # Ensure remote URL is correct
     CURRENT_REMOTE=$(git config --get remote.origin.url)
     if [[ "$CURRENT_REMOTE" != "$REPO_URL" ]]; then
@@ -103,7 +110,6 @@ sync_git_repo() {
         git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
     fi
 }
-
 
 # Run detection immediately in bootstrap.sh
 detect_pkg_mgr
