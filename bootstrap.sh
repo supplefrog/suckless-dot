@@ -36,4 +36,4 @@ if ! command -v curl &> /dev/null; then
     $INSTALL_CMD curl
 fi
 
-echo "Essential packages installed. Ready to clone the repo and continue setup."
+source "$(dirname "$0")/install.sh"
