@@ -22,14 +22,14 @@ REPO_BUILDS=(
 
 echo "Installing dependencies..."
 {
-  source "$(dirname "$0")/install_deps.sh"
-  source "$(dirname "$0")/install_deps_src.sh"
+    source "$(dirname "$0")/install_deps.sh"
+    source "$(dirname "$0")/install_deps_src.sh"
+
+    echo "Copying dot files..."
+    source "$(dirname "$0")/dot.sh"
 } || {
   echo "Error encountered while installing dependencies, continuing..."
 }
-echo "Copying dot files..."
-source "$(dirname "$0")/dot.sh"
-
 # Clone repositories and run integrity checks
 for i in "${!REPO_NAMES[@]}"; do
     sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
