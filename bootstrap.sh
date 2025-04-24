@@ -46,25 +46,14 @@ clone_repos() {
 
         if [[ ! -d "$DIR" ]]; then
             echo "Cloning $NAME into $DIR..."
-            if git clone --depth=1 "$URL" "$DIR"; then
-                echo "Successfully cloned $NAME."
-            else
-                echo "⚠️ Failed to clone $NAME, continuing."
-                continue
-            fi
+            git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned $NAME."
         elif [[ -d "$DIR/.git" ]]; then
             echo "$NAME repo exists. Pulling latest changes..."
-            if git -C "$DIR" pull --rebase --autostash; then
-                echo "Successfully pulled latest changes for $NAME."
-            else
-                echo "⚠️ Pull failed for $NAME, continuing."
-            fi
+            git -C "$DIR" pull --rebase --autostash && echo "Successfully pulled latest changes for $NAME."
         else
             echo "⚠️ $DIR exists but is not a git repo. Reinitializing and pulling..."
-            cd "$DIR" || { echo "⚠️ Unable to access $DIR, skipping."; continue; }
-            git init
-            git remote add origin "$URL"
-            git pull --rebase --autostash || echo "⚠️ Pull failed for $NAME, continuing."
+            (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase --autostash) \
+                && echo "Successfully pulled latest changes for $NAME."
         fi
     done
 }
