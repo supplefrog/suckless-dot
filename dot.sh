@@ -43,4 +43,4 @@ esac
 sudo chmod u+x /usr/bin/nvim-linux-x86_64.appimage
 sudo ln -sf /usr/bin/nvim-linux-x86_64.appimage /usr/bin/vim
 
-echo "Installation completed successfully!"
+echo "Dot files transfered!"
