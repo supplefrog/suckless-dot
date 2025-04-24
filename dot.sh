@@ -7,35 +7,19 @@ detect_pkg_mgr
 # Move user dotfiles (excluding . and ..)
 echo "Copying dotfiles to corresponding directories..."
 
-shopt -s dotglob nullglob
+# Enable dotglob to include hidden files
+shopt -s dotglob
 
-# Function to copy dotfiles
-copy_dotfiles() {
-    local src="$1"
-    local dest="$2"
+# List of directories to copy
+for dir in feh dwm st; do
+    src="$DOTFILES_DIR/home/e/.de/$dir"
+    dest="$HOME/.de/$dir"
+    
+    cp -r "$src"/* "$dest"/ 2>/dev/null && echo "Copied $dir" || echo "Skipped $dir (already exists)"
+done
 
-    for file in "$src"/*; do
-        local filename="$(basename "$file")"
-        local target="$dest/$filename"
-
-        if [ -d "$file" ]; then
-            mkdir -p "$target"
-            copy_dotfiles "$file" "$target"
-        elif [ ! -e "$target" ]; then
-            cp -r "$file" "$target"
-            echo "Copied: $target"
-        else
-            echo "Skipped (already exists): $target"
-        fi
-    done
-}
-
-# Copy files into their respective directories
-copy_dotfiles "$DOTFILES_DIR/home/e/.de/feh" "$HOME/.de/feh"
-copy_dotfiles "$DOTFILES_DIR/home/e/.de/dwm" "$HOME/.de/dwm"
-copy_dotfiles "$DOTFILES_DIR/home/e/.de/st" "$HOME/.de/st"
-
-shopt -u dotglob nullglob
+# Disable dotglob
+shopt -u dotglob
 
 echo "Installing scripts to /usr/bin..."
 sudo cp -n "$DOTFILES_DIR/usr/bin/"* /usr/bin/
