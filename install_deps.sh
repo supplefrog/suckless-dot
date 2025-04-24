@@ -3,7 +3,8 @@
 set -euo pipefail
 
 # Source the package manager utilities
-source "$(dirname "$0")/pkg_manager_utils.sh"
+source "$(dirname "$0")/bootstrap.sh"
+detect_pkg_mgr
 
 # List of packages to install
 PKG_LIST="xorg xorg-dev xserver-xorg libcurl4-openssl-dev libimlib2-dev libx11-dev libxft-dev libxinerama-dev libxrandr-dev libxcb1-dev libxt-dev gcc git make pkg-config dmenu vifm"
