@@ -2,7 +2,8 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/pkg_manager_utils.sh"
+source "$(dirname "$0")/bootstrap.sh"
+detect_pkg_mgr
 
 # Move configuration files to their respective locations
 echo "Moving configuration files..."
