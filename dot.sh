@@ -2,9 +2,6 @@
 
 set -euo pipefail
 
-# Define base dotfiles directory
-DOTFILES="$HOME/Downloads/suckless-dot"
-
 detect_pkg_mgr
 
 # Move user dotfiles (excluding . and ..)
