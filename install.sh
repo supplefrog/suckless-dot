@@ -5,7 +5,7 @@ set -euo pipefail
 # Repo variables
 REPO_NAMES=("dwm" "st" "feh")
 REPO_URLS=(
-    "https://git.suckless.org/dwm"
+    "git://git.suckless.org/dwm"
     "git://git.suckless.org/st"
     "https://github.com/derf/feh.git"
 )
