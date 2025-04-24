@@ -62,6 +62,6 @@ install_essentials
 clone_repos
 
 # Source install scripts from repo
-source "$DOTFILES_DIR/install_deps.sh"
-source "$DOTFILES_DIR/install_deps_src.sh"
-source "$DOTFILES_DIR/install.sh"
+source "$DOTFILES_DIR/install_deps.sh" || echo "⚠️ install_deps.sh failed, continuing..."
+source "$DOTFILES_DIR/install_deps_src.sh" || echo "⚠️ install_deps_src.sh failed, continuing..."
+source "$DOTFILES_DIR/install.sh" || echo "⚠️ install.sh failed, continuing..."
