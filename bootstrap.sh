@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -euo pipefail
+
 # Detect package manager and define install command
 detect_pkg_mgr() {
     if command -v apt &> /dev/null; then
@@ -20,111 +22,68 @@ detect_pkg_mgr() {
     fi
 }
 
-sync_git_repo() {
-    NAME="$1"
-    REPO_URL="$2"
-    DEST_DIR="$3"
-    BUILD_CMD="$4"  # Optional command to run after pulling
-    LAST_BUILD_FILE="$DEST_DIR/.last_build_commit"
-    
-    # List of pre-existing files and directories to exclude (dotfiles and folders)
-    EXCLUDE_FILES=(
-        "config.def.h"
-        "config.h"
-        "bg"
-        # Add any other dotfiles or files to exclude here
-    )
+# Ensure essential packages are available
+install_essentials() {
+    echo "Installing essential packages (git, curl)..."
 
-    echo "==> Syncing $NAME from $REPO_URL"
-
-    # Backup pre-existing files that could be overwritten
-    BACKUP_DIR="$DEST_DIR/backup_dotfiles"
-    mkdir -p "$BACKUP_DIR"
-    
-    echo "Backing up pre-existing dotfiles..."
-    for file in "${EXCLUDE_FILES[@]}"; do
-        if [ -e "$DEST_DIR/$file" ]; then
-            mv "$DEST_DIR/$file" "$BACKUP_DIR/"
-            echo "Moved $file to backup directory."
-        fi
-    done
-
-    # Check if the directory is already a git repository
-    if [ ! -d "$DEST_DIR/.git" ]; then
-        echo "$NAME not found as a git repo. Cloning fresh copy..."
-        git clone "$REPO_URL" "$DEST_DIR"
-    else
-        # If repo already exists, just pull the latest changes
-        echo "$NAME already exists. Pulling latest changes..."
-        cd "$DEST_DIR"
-        git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
+    if ! command -v git &> /dev/null; then
+        echo "Git not found. Installing..."
+        $INSTALL_CMD git
     fi
 
-    cd "$DEST_DIR"
-
-    # Ensure remote URL is correct
-    CURRENT_REMOTE=$(git config --get remote.origin.url)
-    if [[ "$CURRENT_REMOTE" != "$REPO_URL" ]]; then
-        echo "Remote URL mismatch for $NAME. Fixing..."
-        git remote set-url origin "$REPO_URL"
+    if ! command -v curl &> /dev/null; then
+        echo "Curl not found. Installing..."
+        $INSTALL_CMD curl
     fi
-
-    # Fetch latest commit
-    LATEST_COMMIT=$(git rev-parse origin/HEAD)
-
-    # Handle build logic (only rebuild if the commit has changed)
-    if [[ -n "$BUILD_CMD" ]]; then
-        # Check if the commit has been built previously
-        if [[ -f "$LAST_BUILD_FILE" ]] && grep -q "$LATEST_COMMIT" "$LAST_BUILD_FILE"; then
-            echo "$NAME is already built at $LATEST_COMMIT. Skipping rebuild."
-            return
-        fi
-
-        echo "Checking out latest commit for $NAME..."
-        git checkout "$LATEST_COMMIT"
-
-        echo "Running build for $NAME..."
-        eval "$BUILD_CMD"
-
-        # Update the last build commit file
-        echo "$LATEST_COMMIT" > "$LAST_BUILD_FILE"
-    else
-        # Just pull the latest changes without rebuilding
-        echo "Pulling latest changes for $NAME..."
-        git pull --rebase --autostash || echo "Pull failed for $NAME, but repo integrity is OK."
-    fi
-
-    # Restore the backed-up dotfiles
-    echo "Restoring pre-existing dotfiles from backup..."
-    for file in "${EXCLUDE_FILES[@]}"; do
-        if [ -e "$BACKUP_DIR/$file" ]; then
-            mv "$BACKUP_DIR/$file" "$DEST_DIR/"
-            echo "Restored $file from backup."
-        fi
-    done
-
-    # Cleanup backup directory after restoring
-    rm -rf "$BACKUP_DIR"
-    echo "Cleaned up backup directory."
-
-    echo "$NAME sync completed without overwriting local dotfiles."
 }
 
-# Run detection immediately in bootstrap.sh
+# Clone function (without building yet)
+clone_repos() {
+    echo "==> Cloning repositories..."
+
+    declare -a REPO_NAMES=("dwm" "st" "feh")
+    declare -a REPO_URLS=(
+        "git://git.suckless.org/dwm"
+        "git://git.suckless.org/st"
+        "https://github.com/derf/feh.git"
+    )
+    declare -a REPO_DIRS=(
+        "$HOME/.de/dwm"
+        "$HOME/.de/st"
+        "$HOME/.de/feh"
+    )
+
+    for i in "${!REPO_NAMES[@]}"; do
+        NAME="${REPO_NAMES[$i]}"
+        URL="${REPO_URLS[$i]}"
+        DIR="${REPO_DIRS[$i]}"
+
+        if [[ ! -d "$DIR/.git" ]]; then
+            echo "Cloning $NAME into $DIR..."
+            git clone "$URL" "$DIR"
+        else
+            echo "$NAME already exists, pulling latest changes..."
+            cd "$DIR" && git pull --rebase --autostash
+        fi
+    done
+
+    # Clone the dotfile repo if not present
+    DOTFILES_REPO="https://github.com/supplefrog/suckless-dot.git"
+    DOTFILES_DIR="$HOME/Downloads/suckless-dot"
+
+    if [[ ! -d "$DOTFILES_DIR/.git" ]]; then
+        echo "Cloning dotfiles repo..."
+        git clone "$DOTFILES_REPO" "$DOTFILES_DIR"
+    else
+        echo "Dotfiles repo already exists. Pulling updates..."
+        cd "$DOTFILES_DIR" && git pull --rebase --autostash
+    fi
+}
+
+# --- MAIN SCRIPT EXECUTION ---
 detect_pkg_mgr
+install_essentials
+clone_repos
 
-echo "Using package manager: $PKG_MGR"
-echo "Installing essential packages (git, curl)..."
-
-if ! command -v git &> /dev/null; then
-    echo "Git not found. Installing Git..."
-    $INSTALL_CMD git
-fi
-
-if ! command -v curl &> /dev/null; then
-    echo "Curl not found. Installing Curl..."
-    $INSTALL_CMD curl
-fi
-
-sync_git_repo "suckless-dot" "https://github.com/supplefrog/suckless-dot.git" "$HOME/Downloads/suckless-dot" ""
+# Run the next stage (dotfiles + builds)
 source "$(dirname "$0")/install.sh"
