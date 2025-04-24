@@ -5,21 +5,18 @@ set -euo pipefail
 source "$(dirname "$0")/git_sync_utils.sh"
 
 # Repo variables
-REPO_NAMES=("suckless-dot" "dwm" "st" "feh")
+REPO_NAMES=("dwm" "st" "feh")
 REPO_URLS=(
-    "https://github.com/supplefrog/suckless-dot.git"
     "https://git.suckless.org/dwm"
     "https://git.suckless.org/st"
     "https://github.com/derf/feh.git"
 )
 REPO_DIRS=(
-    "$HOME/Downloads/suckless-dot"
     "$HOME/.de/dwm"
     "$HOME/.de/st"
     "$HOME/.de/feh"
 )
 REPO_BUILDS=(
-    ""  # No build for suckless-dot
     "sudo make clean install"
     "sudo make clean install"
     "sudo make && sudo make install"
