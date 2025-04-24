@@ -2,8 +2,6 @@
 
 set -euo pipefail
 
-source "$(dirname "$0")/bootstrap.sh"
-
 # Repo variables
 REPO_NAMES=("dwm" "st" "feh")
 REPO_URLS=(
