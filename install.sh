@@ -2,38 +2,28 @@
 
 set -euo pipefail
 
-# Repo variables
-REPO_NAMES=("dwm" "st" "feh")
-REPO_URLS=(
-    "git://git.suckless.org/dwm"
-    "git://git.suckless.org/st"
-    "https://github.com/derf/feh.git"
-)
+# Call dotfile setup
+echo "==> Running dotfile setup..."
+source "$(dirname "$0")/dot.sh"
+
+# Build suckless software
+echo "==> Building repositories..."
 REPO_DIRS=(
     "$HOME/.de/dwm"
     "$HOME/.de/st"
     "$HOME/.de/feh"
 )
-REPO_BUILDS=(
+
+BUILD_CMDS=(
     "sudo make clean install"
     "sudo make clean install"
     "sudo make && sudo make install"
 )
 
-echo "Installing dependencies..."
-{
-    source "$(dirname "$0")/install_deps.sh"
-    source "$(dirname "$0")/install_deps_src.sh"
+for i in "${!REPO_DIRS[@]}"; do
+    echo "Building: ${REPO_DIRS[$i]}"
+    cd "${REPO_DIRS[$i]}"
+    eval "${BUILD_CMDS[$i]}"
+done
 
-    echo "Copying dot files..."
-    source "$(dirname "$0")/dot.sh"
-
-    # Clone repositories and run integrity checks
-    for i in "${!REPO_NAMES[@]}"; do
-        sync_git_repo "${REPO_NAMES[i]}" "${REPO_URLS[i]}" "${REPO_DIRS[i]}" "${REPO_BUILDS[i]}"
-    done
-} || {
-  echo "Exception encountered while installing dependencies, continuing..."
-}    
-
-echo "Installation Complete!"
+echo "Installation and build complete!"
