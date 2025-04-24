@@ -14,8 +14,22 @@ shopt -s dotglob
 for dir in feh dwm st; do
     src="$DOTFILES_DIR/home/e/.de/$dir"
     dest="$HOME/.de/$dir"
-    
-    cp -r "$src"/* "$dest"/ 2>/dev/null && echo "Copied $dir" || echo "Skipped $dir (already exists)"
+
+    # Loop through files in the source directory
+    for file in "$src"/*; do
+        filename="$(basename "$file")"
+        target="$dest/$filename"
+
+        # If file already exists in the target directory, remove it
+        if [ -e "$target" ]; then
+            rm -f "$target"
+            echo "Replaced: $target"
+        fi
+
+        # Copy the new file to the target directory
+        cp -r "$file" "$target"
+        echo "Copied: $target"
+    done
 done
 
 # Disable dotglob
