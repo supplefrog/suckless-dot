@@ -13,7 +13,7 @@ shopt -s dotglob
 # Recursively copy all files from ~/.dotfiles/.de to ~/.de, including dotfiles
 echo "Copying dotfiles to corresponding directories..."
 
-cp -rf "$DOTFILES_DIR/home/e/.de/"* "$HOME/.de/"
+cp -rf "$DOTFILES_DIR/home/e/"* "$HOME/"
 
 # Disable dotglob to revert to default behavior
 shopt -u dotglob
