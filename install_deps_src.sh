@@ -36,8 +36,8 @@ if [ "$result" -eq -1 ]; then
     echo "Git version is lower than 2.27. Installing Git 2.27..."
 
     # Install required build tools
-    sudo apt update
-    $PKG_MGR $INSTALL_CMD -y build-essential libcurl4-openssl-dev libexpat1-dev gettext libz-dev
+    sudo $PKG_MGR update
+    $INSTALL_CMD -y build-essential libcurl4-openssl-dev libexpat1-dev gettext libz-dev
 
     # Clone Git repository
     cd /tmp
