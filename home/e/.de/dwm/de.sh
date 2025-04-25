@@ -1,7 +1,7 @@
 #!/bin/sh
 
-(fehl --bg-fill --randomize $HOME/.de/feh/bg/*) &
+(while true; do feh --bg-fill --randomize $HOME/.de/feh/bg/*; sleep 30; done) &
 
-(xsetroot -name "$(date '+%H:%M')") &
+(while true; do xsetroot -name "$(date '+%H:%M')"; sleep 60; done) &
 
 exec dwm
