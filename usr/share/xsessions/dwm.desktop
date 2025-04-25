@@ -2,5 +2,5 @@
   Encoding=UTF-8
   Name=DWM
   Comment=Dynamic Window Manager
-  Exec=/bin/sh -c 'source ~/.xinitrc;' 
+  Exec=/bin/sh -c 'source $HOME/.xinitrc;' 
   Type=XSession
