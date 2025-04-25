@@ -1,1 +1,1 @@
-/root/.de/dwm/de.sh
+~/.de/dwm/de.sh
