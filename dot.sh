@@ -27,7 +27,7 @@ echo "Installing shared files to /usr/share..."
 sudo cp -rn "$DOTFILES_DIR/usr/share/"* /usr/share/
 
 echo "Setting executable permission on dwm startup script..."
-sudo chmod +x "$HOME/.de/dwm/de.sh"
+sudo chmod +x "$HOME/.xinitrc"
 
 echo "Updating font cache..."
 sudo fc-cache -fv
