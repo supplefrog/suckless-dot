@@ -8,19 +8,21 @@ static const int showbar            = 1;        /* 0 means no bar */
 static const int topbar             = 1;        /* 0 means bottom bar */
 static const char *fonts[]          = { "Fira Code:size=10" };
 static const char dmenufont[]       = "Fira Code:size=10";
-static const char c1[]       = "#171919";
-static const char c2[]       = "#3B3A43";
-static const char c3[]       = "#49494A";
-static const char c4[]       = "#eeeeee";
-static const char c5[]       = "#000000";
+static const char c1[]       = "#000000";
+static const char c2[]       = "#eeeeee";
+static const char c3[]       = "#808080";
 static const char *colors[][3]      = {
 	/*               fg         bg         border   */
-	[SchemeNorm] = { c3, c1, c2},
-	[SchemeSel]  = { c4, c5, c5},
+	[SchemeNorm] = { c3, c1, c3},
+	[SchemeSel]  = { c2, c1, c1},
 };
 
 /* tagging */
 static const char *tags[] = { "1", "2", "3", "4", "5", "6", "7", "8", "9" };
+
+static const char ptagf[] = "[%s %s]";	/* format of a tag label */
+static const char etagf[] = "[%s]";	/* format of an empty tag */
+static const int lcaselbl = 0;		/* 1 means make tag label lowercase */	
 
 static const Rule rules[] = {
 	/* xprop(1):
@@ -58,7 +60,7 @@ static const Layout layouts[] = {
 
 /* commands */
 static char dmenumon[2] = "0"; /* component of dmenucmd, manipulated in spawn() */
-static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", c1, "-nf", c3, "-sb", c2, "-sf", c4, NULL };
+static const char *dmenucmd[] = { "dmenu_run", "-m", dmenumon, "-fn", dmenufont, "-nb", c1, "-nf", c2, "-sb", c3, "-sf", c2, NULL };
 static const char *termcmd[]  = { "st", NULL };
 static const char *chromecmd[]  = { "google-chrome", NULL };
 static const char *fmcmd[]  = { "st", "-e", "vifm", NULL };
@@ -118,4 +120,3 @@ static const Button buttons[] = {
 	{ ClkTagBar,            MODKEY,         Button1,        tag,            {0} },
 	{ ClkTagBar,            MODKEY,         Button3,        toggletag,      {0} },
 };
-
