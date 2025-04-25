@@ -41,6 +41,7 @@ clone_repos() {
     echo "==> Cloning repositories..."
 
     for entry in "${REPOS[@]}"; do
+        {
         read -r NAME URL DIR <<< "$entry"
         echo "-> Handling $NAME..."
 
@@ -55,7 +56,10 @@ clone_repos() {
             (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase --autostash) \
                 && echo "Successfully pulled latest changes for $NAME."
         fi
+        } &
     done
+
+    wait
 }
 
 # --- Run ---
