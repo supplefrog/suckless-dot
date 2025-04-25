@@ -37,7 +37,7 @@ if [ "$result" -eq -1 ]; then
 
     # Install required build tools
     sudo apt update
-    sudo apt install -y build-essential libcurl4-openssl-dev libexpat1-dev gettext libz-dev
+    $PKG_MGR $INSTALL_CMD -y build-essential libcurl4-openssl-dev libexpat1-dev gettext libz-dev
 
     # Clone Git repository
     cd /tmp
