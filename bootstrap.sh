@@ -68,7 +68,7 @@ clone_repos() {
         if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
             # If .git exists, pull the latest changes
             echo "$DIR repo exists. Pulling latest changes..."
-            git -C "$DIR" pull --rebase --autostash && echo "Successfully pulled latest changes."
+            (cd "$DIR" && git pull --rebase --autostash) && echo "Successfully pulled latest changes."
         
         elif [[ -d "$DIR" ]]; then
             # If it doesn't contain .git, reinitialize and pull
