@@ -40,7 +40,7 @@ for i in "${!REPO_DIRS[@]}"; do
         for PATCH in *.diff; do
             if [[ -f "$PATCH" ]]; then
                 echo "Applying patch: $PATCH"
-                patch -p1 < "$PATCH" -N
+                patch -p1 < "$PATCH" -N || echo ""
             fi
         done
     fi
