@@ -52,6 +52,11 @@ clone_repos() {
         read -r NAME URL DIR <<< "$entry"
         echo "-> Handling $NAME..."
 
+        # If DIR is empty, extract repo name from URL
+        if [[ -z "$DIR" ]]; then
+            DIR=$(basename "$URL" .git)
+        fi
+
         if [[ ! -d "$DIR" ]]; then
             echo "Cloning $NAME into $DIR..."
             git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned $NAME."
