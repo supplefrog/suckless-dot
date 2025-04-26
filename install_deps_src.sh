@@ -41,7 +41,7 @@ if [ "$result" -eq -1 ]; then
 
     # Clone Git repository
     cd /tmp
-    clone_repos "https://github.com/git/git.git"
+    clone_repos "https://github.com/git/git.git"  # Your custom function
     cd git
 
     # Checkout the version 2.27
