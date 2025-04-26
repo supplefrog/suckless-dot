@@ -43,61 +43,67 @@ clone_repos() {
 
     for entry in "${entries[@]}"; do
         {
-            local branch url dir
-            branch=""
-            url=""
-            dir=""
-            
-            # Parse the entry input
-            while [[ "$#" -gt 0 ]]; do
-                case "$1" in
+            local branch="" url="" dir="" full_clone="false"
+            local tokens=($entry)
+
+            # Manual parsing to support optional --full flag
+            for ((i = 0; i < ${#tokens[@]}; i++)); do
+                case "${tokens[$i]}" in
                     --branch)
-                        branch="$2"
-                        shift 2
+                        branch="${tokens[$((i + 1))]}"
+                        ((i++))
                         ;;
-                    *)
-                        url="$1"
-                        dir=$(basename "$url" .git)  # Default to the repo name as directory
-                        shift
+                    --unshallow)
+                        full_clone="true"
+                        ;;
+                    http*)
+                        url="${tokens[$i]}"
+                        dir=$(basename "$url" .git)
                         ;;
                 esac
             done
 
-            # Ensure both branch and URL are provided
             if [[ -z "$branch" || -z "$url" ]]; then
-                echo "Usage: clone_repos --branch <branchname> <repo_url>"
+                echo "❌ Usage: clone_repos --branch <branch> [--full] <repo_url>"
                 return 1
             fi
 
             echo "-> Handling $url (dir: $dir, branch: $branch)..."
 
-            # Check if the directory exists and is a git repository
             if [[ -d "$dir" && -d "$dir/.git" ]]; then
-                echo "$dir repo exists. Checking branch '$branch'..."
+                echo "$dir exists. Pulling '$branch'..."
 
-                # Change to the repo directory
-                cd "$dir" || { echo "Failed to cd into $dir"; continue; }
+                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
 
-                # Check if the branch exists locally
                 if git show-ref --verify --quiet "refs/heads/$branch"; then
-                    # Pull the latest changes for the specified branch
-                    git fetch --depth 1 origin "$branch" && git checkout "$branch" && git pull --depth 1 --rebase origin "$branch"
-                    echo "✅ Pulled the latest changes for branch '$branch' in $dir"
+                    if [[ "$full_clone" == "true" ]]; then
+                        git fetch origin "$branch" && git checkout "$branch" && git pull --rebase origin "$branch"
+                    else
+                        git fetch --depth 1 origin "$branch" && \
+                        git checkout "$branch" && \
+                        git pull --depth 1 --rebase origin "$branch" || {
+                            echo "⚠️ Shallow pull failed, doing full fetch..."
+                            git fetch --unshallow && git pull --rebase origin "$branch"
+                        }
+                    fi
                 else
-                    echo "⚠️ Branch '$branch' does not exist locally. Creating and checking out..."
-                    git checkout -b "$branch" origin/"$branch"
-                    echo "✅ Created and checked out branch '$branch' in $dir"
+                    git fetch origin "$branch" && git checkout -b "$branch" origin/"$branch"
                 fi
 
-                # Go back to the original directory
-                cd - || exit 1
+                cd - >/dev/null || exit 1
 
             else
-                echo "$dir doesn't exist. Cloning repository..."
+                echo "$dir doesn't exist. Cloning..."
 
-                # Clone the repository with the specified branch
-                git clone --depth 1 --branch "$branch" "$url" "$dir"
-                echo "✅ Successfully cloned $dir and checked out branch '$branch'"
+                if [[ "$full_clone" == "true" ]]; then
+                    git clone --single-branch --branch "$branch" "$url" "$dir"
+                else
+                    git clone --depth 1 --single-branch --branch "$branch" "$url" "$dir" || {
+                        echo "⚠️ Shallow clone failed. Trying full clone..."
+                        git clone --single-branch --branch "$branch" "$url" "$dir"
+                    }
+                fi
+                echo "✅ Cloned $branch into $dir"
             fi
         } &
     done
