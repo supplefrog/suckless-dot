@@ -31,7 +31,7 @@ for i in "${!REPO_DIRS[@]}"; do
         for PATCH in st-anysize-20220718-baa9357.diff st-scrollback-ringbuffer-0.9.2.diff st-scrollback-float-0.9.2.diff; do
             if [[ -f "$PATCH" ]]; then
                 echo "Applying patch: $PATCH"
-                patch -p1 < "$PATCH" -N
+                patch -p1 < "$PATCH" -N || echo ""
             fi
         done
         cp config.def.h config.h
