@@ -45,7 +45,7 @@ if [ "$result" -eq -1 ]; then
     cd git
 
     # Checkout the specific commit for Git v2.27.0
-    git fetch --depth=1 origin b3d7a52fac39193503a0b6728771d1bf6a161464
+    git fetch origin b3d7a52fac39193503a0b6728771d1bf6a161464
     git checkout b3d7a52fac39193503a0b6728771d1bf6a161464
 
     # Compile and install
