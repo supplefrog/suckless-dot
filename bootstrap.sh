@@ -40,42 +40,34 @@ install_essentials() {
 clone_repos() {
     echo "==> Cloning repositories..."
 
-    local total_args=$#
-    local i=0
+    local entries=("$@")
 
-    while [[ $i -lt $total_args ]]; do
-        URL="${!((i+1))}"
-        next_index=$((i+2))
+    for entry in "${entries[@]}"; do
+        # Split the entry into URL and DIR
+        local URL DIR
+        read -r URL DIR <<< "$entry"
 
-        # Check if the next arg looks like a URL or not (to decide if it's a dir or next URL)
-        if [[ $next_index -le $total_args ]] && ! [[ "${!next_index}" =~ ^(https?|git):// ]]; then
-            DIR="${!next_index}"
-            ((i+=2))
-        else
+        # If DIR wasn't provided, derive it from URL
+        if [[ -z "$DIR" ]]; then
             DIR=$(basename "$URL" .git)
-            ((i+=1))
         fi
 
         echo "-> Handling $URL (dir: $DIR)..."
 
-        {
-            if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
-                echo "$DIR repo exists. Pulling latest changes..."
-                (cd "$DIR" && git pull --rebase --autostash) && echo "Successfully pulled latest changes."
+        if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
+            echo "$DIR repo exists. Pulling latest changes..."
+            (cd "$DIR" && git pull --rebase --autostash) && echo "✅ Successfully pulled."
 
-            elif [[ -d "$DIR" ]]; then
-                echo "⚠️ $DIR exists but is not a git repo. Reinitializing and pulling..."
-                (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase --autostash) \
-                    && echo "Successfully pulled latest changes."
+        elif [[ -d "$DIR" ]]; then
+            echo "⚠️ $DIR exists but is not a git repo. Reinitializing..."
+            (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase --autostash) \
+                && echo "✅ Reinitialized and pulled."
 
-            else
-                echo "Cloning into $DIR..."
-                git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned."
-            fi
-        } &
+        else
+            echo "Cloning into $DIR..."
+            git clone --depth=1 "$URL" "$DIR" && echo "✅ Successfully cloned."
+        fi
     done
-
-    wait
 }
 
 # --- Run ---
