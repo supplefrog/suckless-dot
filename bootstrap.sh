@@ -43,14 +43,14 @@ clone_repos() {
 
     for entry in "${entries[@]}"; do
         {
-            local branch="" url="" dir=""
+            local commit_hash="" url="" dir=""
             local tokens=($entry)
 
-            # Manual parsing to handle --branch flag
+            # Manual parsing to handle --commit
             for ((i = 0; i < ${#tokens[@]}; i++)); do
                 case "${tokens[$i]}" in
-                    --branch)
-                        branch="${tokens[$((i + 1))]}"
+                    --commit)
+                        commit_hash="${tokens[$((i + 1))]}"
                         ((i++))
                         ;;
                     http*)
@@ -60,35 +60,51 @@ clone_repos() {
                 esac
             done
 
-            # Check if branch or URL is missing
-            if [[ -z "$branch" || -z "$url" ]]; then
-                echo "❌ Usage: clone_repos --branch <branch> <repo_url>"
+            # Check if URL is provided
+            if [[ -z "$url" ]]; then
+                echo "❌ Missing repository URL"
                 return 1
             fi
 
-            echo "-> Handling $url (dir: $dir, branch: $branch)..."
+            if [[ -z "$commit_hash" ]]; then
+                echo "❌ Missing commit hash"
+                return 1
+            fi
+
+            echo "-> Handling $url (dir: $dir)..."
 
             if [[ -d "$dir" && -d "$dir/.git" ]]; then
-                echo "$dir exists. Pulling '$branch'..."
+                echo "$dir exists. Pulling commit '$commit_hash'..."
 
                 cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
 
-                if git show-ref --verify --quiet "refs/heads/$branch"; then
-                    # Always perform full fetch and pull
-                    git fetch origin "$branch" && git checkout "$branch" && git pull --rebase origin "$branch"
-                else
-                    # Branch does not exist, so create it
-                    git fetch origin "$branch" && git checkout -b "$branch" origin/"$branch"
-                fi
+                # Fetch latest changes from the repository
+                git fetch --all
+
+                # Checkout to specific commit hash
+                echo "Checking out commit '$commit_hash'..."
+                git checkout "$commit_hash" || {
+                    echo "❌ Commit hash '$commit_hash' not found in the repository."
+                    continue
+                }
 
                 cd - >/dev/null || exit 1
 
             else
-                echo "$dir doesn't exist. Cloning..."
+                echo "$dir doesn't exist or is empty. Cloning..."
 
-                # Perform a full clone, since branch is specified
-                git clone --single-branch --branch "$branch" "$url" "$dir"
-                echo "✅ Cloned $branch into $dir"
+                # Clone the repo and checkout to the specified commit hash
+                git clone "$url" "$dir" || {
+                    echo "❌ Failed to clone repository."
+                    continue
+                }
+                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
+                git checkout "$commit_hash" || {
+                    echo "❌ Commit hash '$commit_hash' not found."
+                    continue
+                }
+                cd - >/dev/null || exit 1
+                echo "✅ Cloned and checked out commit '$commit_hash' into $dir"
             fi
         } &
     done
@@ -96,7 +112,6 @@ clone_repos() {
     wait
     echo "==> All repository operations done."
 }
-
 
 # --- Run ---
 detect_pkg_mgr
