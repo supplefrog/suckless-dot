@@ -64,13 +64,7 @@ clone_repos() {
         fi
 
         echo "-> Handling $URL (dir: $DIR)..."
-
-        # If the directory doesn't exist, create it
-        if [[ ! -d "$DIR" ]]; then
-            echo "Directory $DIR does not exist. Creating it..."
-            mkdir -p "$DIR"
-        fi
-
+        
         if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
             # If .git exists, pull the latest changes
             echo "$DIR repo exists. Pulling latest changes..."
