@@ -41,7 +41,7 @@ if [ "$result" -eq -1 ]; then
 
     # Clone Git repository
     cd /tmp
-    clone_repos --branch v2.27.0 --unshallow https://github.com/git/git.git
+    clone_repos --commit b3d7a52fac39193503a0b6728771d1bf6a161464 https://github.com/git/git.git
     cd git
     
     # Compile and install
