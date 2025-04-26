@@ -43,26 +43,37 @@ clone_repos() {
 
     for entry in "${entries[@]}"; do
         {
-            local URL DIR
-            read -r URL DIR <<< "$entry"
+            local URL DIR BRANCH
+            read -r URL DIR BRANCH <<< "$entry"
+
+            # Default to 'master' if no branch is specified
+            if [[ -z "$BRANCH" ]]; then
+                BRANCH="master"
+            fi
 
             if [[ -z "$DIR" ]]; then
                 DIR=$(basename "$URL" .git)
             fi
 
-            echo "-> Handling $URL (dir: $DIR)..."
+            echo "-> Handling $URL (dir: $DIR, branch: $BRANCH)..."
 
             if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
                 echo "$DIR repo exists. Pulling latest changes..."
-                if (cd "$DIR" && git pull --rebase); then
-                    echo "✅ Successfully pulled: $DIR"
+
+                # Get the commit hash for the specified branch
+                local COMMIT_HASH
+                COMMIT_HASH=$(git -C "$DIR" rev-parse "$BRANCH")
+
+                # Now use the commit hash for git pull
+                if (cd "$DIR" && git fetch && git checkout "$BRANCH" && git pull --rebase origin "$BRANCH"); then
+                    echo "✅ Successfully pulled latest from branch '$BRANCH' (commit: $COMMIT_HASH) in $DIR"
                 else
                     echo "❌ Pull failed in $DIR"
                 fi
 
             elif [[ -d "$DIR" ]]; then
                 echo "⚠️ $DIR exists but is not a git repo. Reinitializing..."
-                if (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase); then
+                if (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase origin "$BRANCH"); then
                     echo "✅ Reinitialized and pulled: $DIR"
                 else
                     echo "❌ Reinit failed in $DIR"
@@ -70,7 +81,7 @@ clone_repos() {
 
             else
                 echo "Cloning into $DIR..."
-                if git clone --depth=1 "$URL" "$DIR"; then
+                if git clone --branch "$BRANCH" --single-branch "$URL" "$DIR"; then
                     echo "✅ Successfully cloned: $DIR"
                 else
                     echo "❌ Clone failed: $URL"
