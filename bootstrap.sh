@@ -39,7 +39,15 @@ install_essentials() {
 clone_repos() {
     echo "==> Cloning repositories..."
 
-    for entry in "${REPOS[@]}"; do
+    # Normalize input into an array
+    local entries=()
+    if [[ $# -eq 1 ]]; then
+        entries+=("$1")
+    else
+        entries=("$@")
+    fi
+
+    for entry in "${entries[@]}"; do
         {
         read -r NAME URL DIR <<< "$entry"
         echo "-> Handling $NAME..."
@@ -64,7 +72,7 @@ clone_repos() {
 # --- Run ---
 detect_pkg_mgr
 install_essentials
-clone_repos
+clone_repos "${REPOS[@]}"
 
 # Source install scripts from repo
 source "$DOTFILES_DIR/install_deps.sh" || echo "⚠️ install_deps.sh failed, continuing..."
