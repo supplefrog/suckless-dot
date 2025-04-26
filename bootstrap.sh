@@ -39,82 +39,125 @@ install_essentials() {
 
 clone_repos() {
     echo "==> Handling repositories..."
-    local args=("$@")
+    local entries=("$@")
     
-    local commit_hash="" url="" dir=""
+    for entry in "${entries[@]}"; do
+        {
+            local commit_hash="" url="" dir="" branch="main"
+            local tokens=($entry)
 
-    # Parse arguments properly
-    for ((i = 0; i < ${#args[@]}; i++)); do
-        case "${args[$i]}" in
-            --commit)
-                commit_hash="${args[$((i + 1))]}"
-                ((i++))
-                ;;
-            http*)
-                url="${args[$i]}"
-                dir=$(basename "$url" .git)
-                ;;
-        esac
+            # Parse the arguments
+            for ((i = 0; i < ${#tokens[@]}; i++)); do
+                case "${tokens[$i]}" in
+                    --commit)
+                        commit_hash="${tokens[$((i + 1))]}"
+                        ((i++))
+                        ;;
+                    http*)
+                        url="${tokens[$i]}"
+                        dir=$(basename "$url" .git)
+                        ;;
+                esac
+            done
+
+            # Ensure that URL is provided
+            if [[ -z "$url" ]]; then
+                echo "❌ Missing repository URL"
+                return 1
+            fi
+
+            echo "-> Handling $url (dir: $dir)..."
+
+            # If the directory already exists and is a valid git repo
+            if [[ -d "$dir" && -d "$dir/.git" ]]; then
+                echo "$dir exists. Pulling..."
+
+                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
+
+                # Handle shallow repos by fetching full history
+                if [[ -f .git/shallow ]]; then
+                    echo "Shallow clone detected. Unshallowing..."
+                    git fetch --unshallow || {
+                        echo "⚠️ Failed to unshallow. Falling back to full fetch."
+                        git fetch --all
+                    }
+                else
+                    git fetch --all
+                fi
+
+                # Checkout specific commit if hash is provided
+                if [[ -n "$commit_hash" ]]; then
+                    git checkout "$commit_hash" || {
+                        echo "❌ Commit hash '$commit_hash' not found."
+                        continue
+                    }
+                else
+                    echo "No commit hash provided. Pulling latest changes for the default branch '$branch'..."
+                    git checkout "$branch" || {
+                        echo "❌ Failed to checkout branch '$branch'."
+                        continue
+                    }
+                fi
+
+                cd - >/dev/null || exit 1
+
+            elif [[ -d "$dir" && ! -d "$dir/.git" ]]; then
+                # If the directory exists but isn't a Git repo (empty or corrupted), remove it
+                echo "$dir exists but is not a valid Git repo. Removing and re-cloning..."
+                rm -rf "$dir"
+                git clone "$url" "$dir" || {
+                    echo "❌ Failed to clone repository."
+                    continue
+                }
+                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
+                
+                # Checkout the commit hash if provided
+                if [[ -n "$commit_hash" ]]; then
+                    git checkout "$commit_hash" || {
+                        echo "❌ Commit hash '$commit_hash' not found."
+                        continue
+                    }
+                else
+                    git checkout "$branch" || {
+                        echo "❌ Failed to checkout branch '$branch'."
+                        continue
+                    }
+                fi
+
+                cd - >/dev/null || exit 1
+                echo "✅ Cloned and checked out commit/branch '$commit_hash' into $dir"
+
+            else
+                # If directory doesn't exist, perform a fresh clone
+                echo "$dir doesn't exist. Cloning..."
+                git clone "$url" "$dir" || {
+                    echo "❌ Failed to clone repository."
+                    continue
+                }
+                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
+
+                # Checkout the commit hash if provided
+                if [[ -n "$commit_hash" ]]; then
+                    git checkout "$commit_hash" || {
+                        echo "❌ Commit hash '$commit_hash' not found."
+                        continue
+                    }
+                else
+                    git checkout "$branch" || {
+                        echo "❌ Failed to checkout branch '$branch'."
+                        continue
+                    }
+                fi
+
+                cd - >/dev/null || exit 1
+                echo "✅ Cloned and checked out commit/branch '$commit_hash' into $dir"
+            fi
+        } &
     done
 
-    if [[ -z "$url" ]]; then
-        echo "❌ Missing repository URL"
-        return 1
-    fi
-
-    if [[ -z "$commit_hash" ]]; then
-        echo "❌ Missing commit hash"
-        return 1
-    fi
-
-    echo "-> Handling $url (dir: $dir)..."
-
-    if [[ -d "$dir" && -d "$dir/.git" ]]; then
-        echo "$dir exists. Pulling and checking out commit '$commit_hash'..."
-        cd "$dir" || { echo "❌ Failed to cd into $dir"; return 1; }
-
-        # Handle shallow repos
-        if [[ -f .git/shallow ]]; then
-            echo "Shallow clone detected. Unshallowing..."
-            git fetch --unshallow || {
-                echo "⚠️ Failed to unshallow. Falling back to full fetch."
-                git fetch --all
-            }
-        else
-            git fetch --all
-        fi
-
-        git checkout "$commit_hash" || {
-            echo "❌ Commit hash '$commit_hash' not found."
-            return 1
-        }
-
-        cd - >/dev/null || exit 1
-
-    else
-        # If dir exists but isn't a git repo or is empty: nuke it
-        if [[ -d "$dir" ]]; then
-            echo "$dir exists but is not a valid repo. Removing..."
-            rm -rf "$dir"
-        fi
-
-        echo "$dir doesn't exist. Cloning..."
-        git clone "$url" "$dir" || {
-            echo "❌ Failed to clone repository."
-            return 1
-        }
-
-        cd "$dir" || { echo "❌ Failed to cd into $dir"; return 1; }
-        git checkout "$commit_hash" || {
-            echo "❌ Commit hash '$commit_hash' not found after clone."
-            return 1
-        }
-
-        cd - >/dev/null || exit 1
-        echo "✅ Cloned and checked out commit '$commit_hash' into $dir"
-    fi
-
-    echo "==> Repository operation done."
+    # Wait for all background processes to finish
+    wait
+    echo "==> All repository operations done."
 }
 
 # --- Run ---
