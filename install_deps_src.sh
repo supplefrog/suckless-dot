@@ -41,12 +41,8 @@ if [ "$result" -eq -1 ]; then
 
     # Clone Git repository
     cd /tmp
-    clone_repos "https://github.com/git/git.git"
+    git clone --branch v2.27.0 --single-branch https://github.com/git/git.git
     cd git
-
-    # Checkout the specific commit for Git v2.27.0
-    git fetch origin b3d7a52fac39193503a0b6728771d1bf6a161464
-    git checkout b3d7a52fac39193503a0b6728771d1bf6a161464
 
     # Compile and install
     make prefix=/usr/bin all
