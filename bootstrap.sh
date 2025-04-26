@@ -36,6 +36,7 @@ install_essentials() {
     if ! command -v git &> /dev/null; then $INSTALL_CMD git; fi
     if ! command -v curl &> /dev/null; then $INSTALL_CMD curl; fi
 }
+
 clone_repos() {
     echo "==> Cloning repositories..."
 
@@ -57,16 +58,21 @@ clone_repos() {
             DIR=$(basename "$URL" .git)
         fi
 
-        if [[ ! -d "$DIR" ]]; then
-            echo "Cloning $NAME into $DIR..."
-            git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned $NAME."
-        elif [[ -d "$DIR/.git" ]]; then
+        if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
+            # If .git exists, pull the latest changes
             echo "$NAME repo exists. Pulling latest changes..."
             git -C "$DIR" pull --rebase --autostash && echo "Successfully pulled latest changes for $NAME."
-        else
+        
+        elif [[ -d "$DIR" ]]; then
+            # If it doesn't contain .git, reinitialize and pull
             echo "⚠️ $DIR exists but is not a git repo. Reinitializing and pulling..."
             (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase --autostash) \
                 && echo "Successfully pulled latest changes for $NAME."
+
+        else
+            # If the directory doesn't exist, clone the repository
+            echo "Cloning $NAME into $DIR..."
+            git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned $NAME."
         fi
         } &
     done
