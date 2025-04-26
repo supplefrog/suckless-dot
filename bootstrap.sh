@@ -5,10 +5,10 @@ set -euo pipefail
 # --- Config ---
 DOTFILES_DIR="$HOME/.dotfiles"
 REPOS=(
-    "dwm git://git.suckless.org/dwm $HOME/.de/dwm"
-    "st  git://git.suckless.org/st  $HOME/.de/st"
-    "feh https://github.com/derf/feh.git $HOME/.de/feh"
-    "dot https://github.com/supplefrog/suckless-dot.git $DOTFILES_DIR"
+    "git://git.suckless.org/dwm $HOME/.de/dwm"
+    "git://git.suckless.org/st  $HOME/.de/st"
+    "https://github.com/derf/feh.git $HOME/.de/feh"
+    "https://github.com/supplefrog/suckless-dot.git $DOTFILES_DIR"
 )
 
 # --- Functions ---
@@ -50,29 +50,42 @@ clone_repos() {
 
     for entry in "${entries[@]}"; do
         {
-        read -r NAME URL DIR <<< "$entry"
-        echo "-> Handling $NAME..."
-
-        # If DIR is empty, extract repo name from URL
-        if [[ -z "$DIR" ]]; then
+        # If the entry is just a URL, use the repository name as the directory
+        if [[ $entry =~ ^https?:// ]]; then
+            URL="$entry"
             DIR=$(basename "$URL" .git)
+        else
+            # If it's an entry like "url dir", split into URL and DIR
+            read -r URL DIR <<< "$entry"
+            # If DIR is not provided, derive it from the URL
+            if [[ -z "$DIR" ]]; then
+                DIR=$(basename "$URL" .git)
+            fi
+        fi
+
+        echo "-> Handling $URL (dir: $DIR)..."
+
+        # If the directory doesn't exist, create it
+        if [[ ! -d "$DIR" ]]; then
+            echo "Directory $DIR does not exist. Creating it..."
+            mkdir -p "$DIR"
         fi
 
         if [[ -d "$DIR" && -d "$DIR/.git" ]]; then
             # If .git exists, pull the latest changes
-            echo "$NAME repo exists. Pulling latest changes..."
-            git -C "$DIR" pull --rebase --autostash && echo "Successfully pulled latest changes for $NAME."
+            echo "$DIR repo exists. Pulling latest changes..."
+            git -C "$DIR" pull --rebase --autostash && echo "Successfully pulled latest changes."
         
         elif [[ -d "$DIR" ]]; then
             # If it doesn't contain .git, reinitialize and pull
             echo "⚠️ $DIR exists but is not a git repo. Reinitializing and pulling..."
             (cd "$DIR" && git init && git remote add origin "$URL" && git pull --rebase --autostash) \
-                && echo "Successfully pulled latest changes for $NAME."
+                && echo "Successfully pulled latest changes."
 
         else
             # If the directory doesn't exist, clone the repository
-            echo "Cloning $NAME into $DIR..."
-            git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned $NAME."
+            echo "Cloning into $DIR..."
+            git clone --depth=1 "$URL" "$DIR" && echo "Successfully cloned."
         fi
         } &
     done
