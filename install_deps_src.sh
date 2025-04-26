@@ -44,6 +44,8 @@ if [ "$result" -eq -1 ]; then
     git clone --branch v2.27.0 --single-branch https://github.com/git/git.git
     cd git
 
+    git checkout b3d7a52fac39193503a0b6728771d1bf6a161464
+    
     # Compile and install
     make prefix=/usr/bin all
     sudo make prefix=/usr/bin install
