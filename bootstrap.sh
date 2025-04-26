@@ -43,18 +43,15 @@ clone_repos() {
 
     for entry in "${entries[@]}"; do
         {
-            local branch="" url="" dir="" full_clone="false"
+            local branch="" url="" dir=""
             local tokens=($entry)
 
-            # Manual parsing to support optional --full flag
+            # Manual parsing to handle --branch flag
             for ((i = 0; i < ${#tokens[@]}; i++)); do
                 case "${tokens[$i]}" in
                     --branch)
                         branch="${tokens[$((i + 1))]}"
                         ((i++))
-                        ;;
-                    --unshallow)
-                        full_clone="true"
                         ;;
                     http*)
                         url="${tokens[$i]}"
@@ -63,8 +60,9 @@ clone_repos() {
                 esac
             done
 
+            # Check if branch or URL is missing
             if [[ -z "$branch" || -z "$url" ]]; then
-                echo "❌ Usage: clone_repos --branch <branch> [--full] <repo_url>"
+                echo "❌ Usage: clone_repos --branch <branch> <repo_url>"
                 return 1
             fi
 
@@ -76,17 +74,10 @@ clone_repos() {
                 cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
 
                 if git show-ref --verify --quiet "refs/heads/$branch"; then
-                    if [[ "$full_clone" == "true" ]]; then
-                        git fetch origin "$branch" && git checkout "$branch" && git pull --rebase origin "$branch"
-                    else
-                        git fetch --depth 1 origin "$branch" && \
-                        git checkout "$branch" && \
-                        git pull --depth 1 --rebase origin "$branch" || {
-                            echo "⚠️ Shallow pull failed, doing full fetch..."
-                            git fetch --unshallow && git pull --rebase origin "$branch"
-                        }
-                    fi
+                    # Always perform full fetch and pull
+                    git fetch origin "$branch" && git checkout "$branch" && git pull --rebase origin "$branch"
                 else
+                    # Branch does not exist, so create it
                     git fetch origin "$branch" && git checkout -b "$branch" origin/"$branch"
                 fi
 
@@ -95,14 +86,8 @@ clone_repos() {
             else
                 echo "$dir doesn't exist. Cloning..."
 
-                if [[ "$full_clone" == "true" ]]; then
-                    git clone --single-branch --branch "$branch" "$url" "$dir"
-                else
-                    git clone --depth 1 --single-branch --branch "$branch" "$url" "$dir" || {
-                        echo "⚠️ Shallow clone failed. Trying full clone..."
-                        git clone --single-branch --branch "$branch" "$url" "$dir"
-                    }
-                fi
+                # Perform a full clone, since branch is specified
+                git clone --single-branch --branch "$branch" "$url" "$dir"
                 echo "✅ Cloned $branch into $dir"
             fi
         } &
@@ -111,6 +96,7 @@ clone_repos() {
     wait
     echo "==> All repository operations done."
 }
+
 
 # --- Run ---
 detect_pkg_mgr
