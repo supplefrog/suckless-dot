@@ -37,95 +37,54 @@ install_essentials() {
     if ! command -v curl &> /dev/null; then $INSTALL_CMD curl; fi
 }
 
-clone_repo() {
-    local url="$1" dir="$2" commit_hash="$3"
-    local default_branch=""
+sync_repo() {
+    local commit="" OPTIND=1
 
-    # If directory exists but isn't a git repo, remove it
-    if [[ -d "$dir" && ! -d "$dir/.git" ]]; then
-        echo "$dir exists but isn't a valid git repo. Re-cloning..."
-        rm -rf "$dir"
-    fi
-
-    # If directory doesn't exist, clone the repo with or without depth depending on commit_hash
-    if [[ ! -d "$dir/.git" ]]; then
-        echo "Cloning $url into $dir..."
-        if [[ -z "$commit_hash" ]]; then
-            git clone --depth 1 "$url" "$dir" || { echo "❌ Clone failed"; return; }
-        else
-            git clone "$url" "$dir" || { echo "❌ Clone failed"; return; }
-        fi
-    fi
-
-    cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
-
-    # If commit hash is provided, unshallow the repo and fetch the full history
-    if [[ -n "$commit_hash" && -f .git/shallow ]]; then
-        echo "Shallow clone detected. Attempting to unshallow for commit hash '$commit_hash'..."
-        git fetch --unshallow || { 
-            echo "⚠️ Unshallow failed. Fetching full history with 'git fetch --all'...";
-            git fetch --all || { 
-                echo "❌ Failed to fetch full history. Re-cloning without depth.";
-                rm -rf "$dir"
-                git clone "$url" "$dir" || { echo "❌ Clone failed"; return; }
-                cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
-            }
-        }
-    fi
-
-    # If commit hash is provided, checkout that specific commit
-    if [[ -n "$commit_hash" ]]; then
-        echo "Checking out commit hash '$commit_hash'..."
-        git checkout "$commit_hash" || { echo "❌ Commit hash '$commit_hash' not found"; return; }
-    else
-        # If no commit hash, checkout the default branch
-        echo "Fetching branches from the remote..."
-        default_branch=$(git remote show origin | grep "HEAD branch" | awk '{print $NF}')
-        
-        if [[ -z "$default_branch" ]]; then
-            # If no default branch detected, fallback to 'master'
-            default_branch="master"
-        fi
-
-        echo "Checking out the default branch '$default_branch'..."
-        git checkout "$default_branch" || { echo "❌ Failed to checkout branch '$default_branch'"; return; }
-    fi
-
-    cd - >/dev/null
-    echo "✅ Handled $dir"
-}
-
-clone_repos() {
-    echo "==> Handling repositories..."
-    local entries=("$@")
-    
-    for entry in "${entries[@]}"; do
-        {
-            # Initialize variables
-            local commit_hash="" url="" dir="$(pwd)"
-            local tokens=($entry)
-
-            # Parse arguments: --commit, url, and dir
-            for ((i = 0; i < ${#tokens[@]}; i++)); do
-                case "${tokens[$i]}" in
-                    --commit) commit_hash="${tokens[$((i + 1))]}"; ((i++)) ;;  # Commit hash comes first
-                    *) url="${tokens[$i]}"; dir=$(basename "$url" .git) ;;  # Handle URL
-                esac
-            done
-
-            # Ensure URL is provided
-            if [[ -z "$url" ]]; then
-                echo "❌ Missing repository URL"; continue
-            fi
-
-            # Call clone_repo function in parallel
-            clone_repo "$url" "$dir" "$commit_hash" &
-        } 
+    #Parse only the commit flag
+    while getopts_"c:" opt; do
+        case $opt in
+            c) commit=$OPTARG ;;
+            *) echo "Usage: sync_repo [-c <commit>] <repo-url> [<directory>]"; return 1 ;;
+        esac
     done
+    shift $((OPTIND-1))
 
-    # Wait for all background processes to finish
-    wait
-    echo "==> All repository operations done."
+    # Positional args: URL and optional directory
+    local url=$1
+    [ -z "$url" ] && { echo "Error: no repository URL provided"; return 1; }
+    local dir=${2:-$(basename -s .git "$url")}
+
+    if [ ! -d "$dir/.git" ]; then
+        # Fresh clone
+        if [ -n "$commit" ]; then
+            git clone "$url" "$dir" && \
+            (cd "$dir" && git fetch --unshallow 2>/dev/null || true) && \
+            (cd "$dir" && git checkout "$commit")
+        else
+            git clone --depth 1 "$url" "$dir"
+        fi
+    else
+        # Existing repo
+        (
+            cd "$dir" || exit
+            if [ "$(git config --get remote.origin.url)" != "$url" ]; then
+                echo "Error: existing repo's origin URL differs"; return 1
+            fi
+            if [ -n "$commit" ]; then
+                if git rev-parse --is-shallow-repository 2>/dev/null | grep -q true; then
+                    git fetch --unshallow
+                fi
+                git fetch origin "$commit"
+                git checkout "$commit"
+            else
+                if git rev-parse --is-shallow-repository 2>/dev/null | grep -q true; then
+                    git pull --depth 1
+                else
+                    git pull
+                fi
+            fi
+        )
+    fi
 }
 
 # --- Run ---
