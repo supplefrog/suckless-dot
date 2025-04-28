@@ -36,8 +36,23 @@ if [ "$result" -eq -1 ]; then
     echo "Git version is lower than 2.27. Installing Git 2.27..."
 
     # Install required build tools
-    $INSTALL_CMD -y curl-devel expat-devel zlib-devel openssl-devel build-essential libcurl4-openssl-dev libexpat1-dev gettext libz-dev
-    $PKG_MGR groupinstall "Development Tools"
+    case "$PKG_MGR" in
+        "apt")
+            PKG_LIST="build-essential libcurl4-openssl-dev libexpat1-dev libz-dev gettext"
+            ;;
+        "dnf" | "yum")
+            PKG_LIST="curl-devel expat-devel zlib-devel openssl-devel gettext"
+            ;;
+            INSTALL_CMD="$PKG_MGR groupinstall "Development Tools""
+        "pacman")
+            PKG_LIST="zlib"
+            ;;
+        *)
+            echo "Unsupported package manager: $PKG_MGR"
+            exit 1
+            ;;
+    esac
+    $INSTALL_CMD PKG_LIST
 
     # Clone Git repository
     sudo cd /tmp
