@@ -80,7 +80,7 @@ clone_repos() {
             for ((i = 0; i < ${#tokens[@]}; i++)); do
                 case "${tokens[$i]}" in
                     --commit) commit_hash="${tokens[$((i + 1))]}"; ((i++)) ;;  # Commit hash comes first
-                    http*)    url="${tokens[$i]}"; dir=$(basename "$url" .git) ;;  # URL as the repo URL
+                    *) url="${tokens[$i]}"; dir=$(basename "$url" .git) ;;  # Handle URL
                 esac
             done
 
