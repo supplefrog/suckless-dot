@@ -38,7 +38,8 @@ install_essentials() {
 }
 
 clone_repo() {
-    local url="$1" dir="$2" commit_hash="$3" branch="main"
+    local url="$1" dir="$2" commit_hash="$3"
+    local default_branch=""
 
     # If directory exists but isn't a git repo, remove it
     if [[ -d "$dir" && ! -d "$dir/.git" ]]; then
@@ -46,13 +47,13 @@ clone_repo() {
         rm -rf "$dir"
     fi
 
-    # Determine depth based on commit_hash presence
+    # Clone repo with depth flag if no commit hash is provided
     local depth_flag=""
     if [[ -z "$commit_hash" ]]; then
-        depth_flag="--depth 1"  # Shallow clone when no commit hash is provided
+        depth_flag="--depth 1"
     fi
 
-    # Clone repo with appropriate depth
+    # Clone the repository if it's not already cloned
     if [[ ! -d "$dir/.git" ]]; then
         echo "Cloning $url into $dir..."
         git clone $depth_flag "$url" "$dir" || { echo "❌ Clone failed"; return; }
@@ -60,22 +61,25 @@ clone_repo() {
 
     cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
 
-    # Fetch all updates and checkout commit/branch
-    git fetch --all || { echo "❌ Fetch failed"; return; }
-
-    # If the repository is shallow, try to unshallow it
+    # Check if the repo is shallow, and attempt to fetch the full history if shallow
     if [[ -f .git/shallow ]]; then
         echo "Shallow clone detected. Unshallowing..."
         git fetch --unshallow || { echo "⚠️ Failed to unshallow. Proceeding with shallow fetch."; }
     fi
 
-    # Try checking out the provided commit hash, or the default branch if no commit is specified
+    # If commit hash is provided, checkout that specific commit
     if [[ -n "$commit_hash" ]]; then
         git checkout "$commit_hash" || { echo "❌ Commit hash '$commit_hash' not found"; return; }
     else
-        # Automatically detect the default branch
-        local default_branch
-        default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+        # Fallback to detecting the default branch manually (older git versions compatible)
+        echo "Fetching branches from the remote..."
+        default_branch=$(git remote show origin | grep "HEAD branch" | awk '{print $NF}')
+        
+        if [[ -z "$default_branch" ]]; then
+            # If no default branch detected, fallback to 'master'
+            default_branch="master"
+        fi
+
         echo "Checking out the default branch '$default_branch'..."
         git checkout "$default_branch" || { echo "❌ Failed to checkout branch '$default_branch'"; return; }
     fi
