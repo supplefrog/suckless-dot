@@ -37,6 +37,18 @@ install_essentials() {
     if ! command -v curl &> /dev/null; then $INSTALL_CMD curl; fi
 }
 
+sync_repos() {
+    local commit="" OPTIND=1
+    while getopts "c:" o; so [[ $o = c ]] && commit=$OPTARG; done
+    shift $((OPTIND-1))
+    (( $# )) || { echo "Usage: sync_repos [-c commit] url[:dir]..."; return 1; }
+    for spec; do
+        # expand "url:dir" into two words or just "url"
+        IFS=':' read -r url dir <<<"$spec"
+        sync_repo ${commit: +-c $commit} "$url" ${dir:+$dir}
+    done
+}
+
 sync_repo() {
     local commit="" OPTIND=1
 
