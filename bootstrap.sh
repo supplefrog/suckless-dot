@@ -41,7 +41,7 @@ sync_repo() {
     local commit="" OPTIND=1
 
     #Parse only the commit flag
-    while getopts_"c:" opt; do
+    while getopts "c:" opt; do
         case $opt in
             c) commit=$OPTARG ;;
             *) echo "Usage: sync_repo [-c <commit>] <repo-url> [<directory>]"; return 1 ;;
