@@ -12,6 +12,7 @@ case "$PKG_MGR" in
         ;;
     "dnf" | "yum")
         PKG_LIST="gcc make pkg-config libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel libcurl-devel imlib2-devel freetype-devel fontconfig-devel"
+        INSTALL_CMD="$INSTALL_CMD & $PKG_MGR groupinstall "Development Tools""
         ;;
     "pacman")
         PKG_LIST="base-devel libx11 libxft libxinerama libxrandr libxcb libxt curl imlib2 freetype2 fontconfig"
