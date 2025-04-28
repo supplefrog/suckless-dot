@@ -102,7 +102,7 @@ sync_repo() {
 # --- Run ---
 detect_pkg_mgr
 install_essentials
-sync_repo "${REPOS[@]}"
+sync_repos "${REPOS[@]}"
 
 # Source install scripts from repo
 source "$DOTFILES_DIR/install_deps.sh" || echo "⚠️ install_deps.sh failed, continuing..."
