@@ -68,16 +68,19 @@ clone_repo() {
 
 clone_repos() {
     echo "==> Handling repositories..."
-    for entry in "$@"; do
+    local entries=("$@")
+    
+    for entry in "${entries[@]}"; do
         {
+            # Initialize variables
             local commit_hash="" url="" dir="$(pwd)"
             local tokens=($entry)
 
-            # Parse input arguments
+            # Parse arguments: --commit, url, and dir
             for ((i = 0; i < ${#tokens[@]}; i++)); do
                 case "${tokens[$i]}" in
-                    --commit) commit_hash="${tokens[$((i + 1))]}"; ((i++)) ;;
-                    http*)    url="${tokens[$i]}"; dir=$(basename "$url" .git) ;;
+                    --commit) commit_hash="${tokens[$((i + 1))]}"; ((i++)) ;;  # Commit hash comes first
+                    http*)    url="${tokens[$i]}"; dir=$(basename "$url" .git) ;;  # URL as the repo URL
                 esac
             done
 
@@ -86,9 +89,12 @@ clone_repos() {
                 echo "❌ Missing repository URL"; continue
             fi
 
+            # Call clone_repo function in parallel
             clone_repo "$url" "$dir" "$commit_hash" &
         } 
     done
+
+    # Wait for all background processes to finish
     wait
     echo "==> All repository operations done."
 }
