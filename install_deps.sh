@@ -2,18 +2,19 @@
 
 set -euo pipefail
 
+# Detect the package manager and set INSTALL_CMD
 detect_pkg_mgr
 
 # Set PKG_LIST based on the package manager
 case "$PKG_MGR" in
     "apt")
-        PKG_LIST="xorg xorg-dev libcurl4-openssl-dev libimlib2-dev libx11-dev libxft-dev libxinerama-dev libxrandr-dev libxcb1-dev libxt-dev"
+        PKG_LIST="build-essential libx11-dev libxft-dev libxinerama-dev libxrandr-dev libxcb1-dev libxt-dev libcurl4-openssl-dev libimlib2-dev libfreetype6-dev fontconfig"
         ;;
     "dnf" | "yum")
-        PKG_LIST="epel-release xorg-x11-server-utils xorg-x11-server-devel libcurl-devel libx11-devel libxft-devel libxinerama-devel libxrandr-devel libxcb-devel libXt-devel"
+        PKG_LIST="gcc make pkg-config libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel libcurl-devel imlib2-devel freetype-devel fontconfig-devel"
         ;;
     "pacman")
-        PKG_LIST="xorg-server xorg-xinit libcurl-devel imlib2 libx11 libxft libxinerama libxrandr libxcb libxt"
+        PKG_LIST="base-devel libx11 libxft libxinerama libxrandr libxcb libxt curl imlib2 freetype2 fontconfig"
         ;;
     *)
         echo "Unsupported package manager: $PKG_MGR"
@@ -22,7 +23,7 @@ case "$PKG_MGR" in
 esac
 
 # Append common packages for all package managers
-PKG_LIST="$PKG_LIST gcc git make pkg-config dmenu vifm"
+PKG_LIST="$PKG_LIST gcc make pkg-config git dmenu vifm"
 
 echo "Installing required packages..."
 $INSTALL_CMD $PKG_LIST || echo "Warning: Some packages may have failed to install."
