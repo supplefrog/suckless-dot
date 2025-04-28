@@ -45,7 +45,7 @@ sync_repos() {
     for spec; do
         # expand "url:dir" into two words or just "url"
         IFS=':' read -r url dir <<<"$spec"
-        sync_repo ${commit: +-c $commit} "$url" ${dir:+$dir}
+        sync_repo ${commit:+-c $commit} "$url" ${dir:+$dir}
     done
 }
 
