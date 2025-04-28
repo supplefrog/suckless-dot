@@ -50,9 +50,9 @@ if [ "$result" -eq -1 ]; then
     $INSTALL_CMD $PKG_LIST
 
     # Clone Git repository
-    sudo cd /tmp
+    cd /tmp
     sync_repo -c b3d7a52fac39193503a0b6728771d1bf6a161464 https://github.com/git/git.git
-    sudo cd git
+    cd git
     
     # Compile and install
     make prefix=/usr/bin all
