@@ -39,7 +39,7 @@ install_essentials() {
 
 sync_repos() {
     local commit="" OPTIND=1
-    while getopts "c:" o; so [[ $o = c ]] && commit=$OPTARG; done
+    while getopts "c:" o; do [[ $o = c ]] && commit=$OPTARG; done
     shift $((OPTIND-1))
     (( $# )) || { echo "Usage: sync_repos [-c commit] url[:dir]..."; return 1; }
     for spec; do
