@@ -47,7 +47,7 @@ clone_repo() {
         rm -rf "$dir"
     fi
 
-    # Clone repo with depth flag if no commit hash is provided
+    # Determine depth flag based on the commit_hash presence
     local depth_flag=""
     if [[ -z "$commit_hash" ]]; then
         depth_flag="--depth 1"
@@ -61,10 +61,18 @@ clone_repo() {
 
     cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
 
-    # Check if the repo is shallow, and attempt to fetch the full history if shallow
+    # If repository is shallow, attempt to unshallow it
     if [[ -f .git/shallow ]]; then
-        echo "Shallow clone detected. Unshallowing..."
-        git fetch --unshallow || { echo "⚠️ Failed to unshallow. Proceeding with shallow fetch."; }
+        echo "Shallow clone detected. Attempting to unshallow..."
+        git fetch --unshallow || { 
+            echo "⚠️ Unshallow failed. Fetching full history with 'git fetch --all'...";
+            git fetch --all || { 
+                echo "❌ Failed to fetch full history. Re-cloning without depth.";
+                rm -rf "$dir"
+                git clone "$url" "$dir" || { echo "❌ Clone failed"; return; }
+                cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
+            }
+        }
     fi
 
     # If commit hash is provided, checkout that specific commit
@@ -120,6 +128,7 @@ clone_repos() {
     wait
     echo "==> All repository operations done."
 }
+
 
 # --- Run ---
 detect_pkg_mgr
