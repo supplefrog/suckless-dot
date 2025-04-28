@@ -65,13 +65,16 @@ sync_repos() {
       dir=""
     fi
 
-    # 4) Dispatch to sync_repo
+    # 4) Dispatch to sync_repo in background for parallelism ⚡
     if [[ -n $commit ]]; then
-      sync_repo -c "$commit" "$url" ${dir:+"$dir"}
+      sync_repo -c "$commit" "$url" ${dir:+"$dir"} &
     else
-      sync_repo "$url" ${dir:+"$dir"}
+      sync_repo "$url" ${dir:+"$dir"} &
     fi
   done
+
+  # 5) Wait for all background jobs to complete ⚡
+  wait
 }
 
 sync_repo() {
