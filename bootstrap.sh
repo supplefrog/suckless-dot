@@ -38,40 +38,40 @@ install_essentials() {
 }
 
 sync_repos() {
-    local commit="" OPTIND=1
+  local commit="" OPTIND=1
 
-    # 1) Parse only the -c <commit> flag
-    while getopts "c:" opt; do 
-        case $opt in
-            c) commit=$OPTARG ;;
-            *) echo "Usage: sync_repos [-c <commit>] <url> [<dir>] ..."; return 1 ;;
-        esac
-    done
-    shift $((OPTIND-1))
-    
-    # 2) Ensure at least one repo spec
-    if (( $# == 0 )); then
-        echo "Error : provide at least one <url> [<dir>]" >&2
-        return 1
+  # 1) Parse only the -c <commit> flag
+  while getopts "c:" opt; do
+    case $opt in
+      c) commit=$OPTARG ;;
+      *) echo "Usage: sync_repos [-c <commit>] <url> [<dir>] …"; return 1 ;;
+    esac
+  done
+  shift $((OPTIND-1))
+
+  # 2) Ensure at least one repo spec
+  if (( $# == 0 )); then
+    echo "Error: provide at least one <url> [<dir>]" >&2
+    return 1
+  fi
+
+  # 3) Loop over each url [+ optional dir]
+  while (( $# )); do
+    url=$1; shift
+    # If next arg doesn't start with http://, https://, ssh://, assume it's a dir
+    if [[ $# -gt 0 && ! $1 =~ ^(https?|ssh):// ]]; then
+      dir=$1; shift
+    else
+      dir=""
     fi
 
-    # 3) Loop over each url [+ optional dir]
-    while (( $# )); do
-        url=$1; shift
-        # If next arg doesn't start with http://, https://, ssh://, assume it's a dir
-        if [[ $# -gt 0 && ! $1 =~ ^(https?|ssh):// ]]; then
-            dir=$1; shift
-        else
-            dir=""
-        fi
-
-        # 4) Dispatch to sync_repo
-        if [[ -n $commit ]]; then
-            sync_repo -c "$commit" "$url" ${dir: +"$dir"}
-        else
-            sync_repo "$url" ${dir:+"$dir"}
-        fi
-    done
+    # 4) Dispatch to sync_repo
+    if [[ -n $commit ]]; then
+      sync_repo -c "$commit" "$url" ${dir:+"$dir"}
+    else
+      sync_repo "$url" ${dir:+"$dir"}
+    fi
+  done
 }
 
 sync_repo() {
