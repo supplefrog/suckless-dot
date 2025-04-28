@@ -37,125 +37,58 @@ install_essentials() {
     if ! command -v curl &> /dev/null; then $INSTALL_CMD curl; fi
 }
 
+clone_repo() {
+    local url="$1" dir="$2" commit_hash="$3" branch="main"
+
+    # If directory exists but isn't a git repo, remove it
+    if [[ -d "$dir" && ! -d "$dir/.git" ]]; then
+        echo "$dir exists but isn't a valid git repo. Re-cloning..."
+        rm -rf "$dir"
+    fi
+
+    # Clone repo if directory doesn't exist
+    if [[ ! -d "$dir/.git" ]]; then
+        echo "Cloning $url into $dir..."
+        git clone "$url" "$dir" || { echo "❌ Clone failed"; return; }
+    fi
+
+    cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
+
+    # Fetch all updates and checkout commit/branch
+    git fetch --all || { echo "❌ Fetch failed"; return; }
+    if [[ -n "$commit_hash" ]]; then
+        git checkout "$commit_hash" || { echo "❌ Commit hash not found"; return; }
+    else
+        git checkout "$branch" || { echo "❌ Failed to checkout branch '$branch'"; return; }
+    fi
+
+    cd - >/dev/null
+    echo "✅ Handled $dir"
+}
+
 clone_repos() {
     echo "==> Handling repositories..."
-    local entries=("$@")
-    
-    for entry in "${entries[@]}"; do
+    for entry in "$@"; do
         {
-            local commit_hash="" url="" dir="" branch="main"
+            local commit_hash="" url="" dir="$(pwd)"
             local tokens=($entry)
 
-            # Parse the arguments
+            # Parse input arguments
             for ((i = 0; i < ${#tokens[@]}; i++)); do
                 case "${tokens[$i]}" in
-                    --commit)
-                        commit_hash="${tokens[$((i + 1))]}"
-                        ((i++))
-                        ;;
-                    http*)
-                        url="${tokens[$i]}"
-                        dir=$(basename "$url" .git)
-                        ;;
+                    --commit) commit_hash="${tokens[$((i + 1))]}"; ((i++)) ;;
+                    http*)    url="${tokens[$i]}"; dir=$(basename "$url" .git) ;;
                 esac
             done
 
-            # Ensure that URL is provided
+            # Ensure URL is provided
             if [[ -z "$url" ]]; then
-                echo "❌ Missing repository URL"
-                return 1
+                echo "❌ Missing repository URL"; continue
             fi
 
-            echo "-> Handling $url (dir: $dir)..."
-
-            # If the directory already exists and is a valid git repo
-            if [[ -d "$dir" && -d "$dir/.git" ]]; then
-                echo "$dir exists. Pulling..."
-
-                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
-
-                # Handle shallow repos by fetching full history
-                if [[ -f .git/shallow ]]; then
-                    echo "Shallow clone detected. Unshallowing..."
-                    git fetch --unshallow || {
-                        echo "⚠️ Failed to unshallow. Falling back to full fetch."
-                        git fetch --all
-                    }
-                else
-                    git fetch --all
-                fi
-
-                # Checkout specific commit if hash is provided
-                if [[ -n "$commit_hash" ]]; then
-                    git checkout "$commit_hash" || {
-                        echo "❌ Commit hash '$commit_hash' not found."
-                        continue
-                    }
-                else
-                    echo "No commit hash provided. Pulling latest changes for the default branch '$branch'..."
-                    git checkout "$branch" || {
-                        echo "❌ Failed to checkout branch '$branch'."
-                        continue
-                    }
-                fi
-
-                cd - >/dev/null || exit 1
-
-            elif [[ -d "$dir" && ! -d "$dir/.git" ]]; then
-                # If the directory exists but isn't a Git repo (empty or corrupted), remove it
-                echo "$dir exists but is not a valid Git repo. Removing and re-cloning..."
-                rm -rf "$dir"
-                git clone "$url" "$dir" || {
-                    echo "❌ Failed to clone repository."
-                    continue
-                }
-                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
-                
-                # Checkout the commit hash if provided
-                if [[ -n "$commit_hash" ]]; then
-                    git checkout "$commit_hash" || {
-                        echo "❌ Commit hash '$commit_hash' not found."
-                        continue
-                    }
-                else
-                    git checkout "$branch" || {
-                        echo "❌ Failed to checkout branch '$branch'."
-                        continue
-                    }
-                fi
-
-                cd - >/dev/null || exit 1
-                echo "✅ Cloned and checked out commit/branch '$commit_hash' into $dir"
-
-            else
-                # If directory doesn't exist, perform a fresh clone
-                echo "$dir doesn't exist. Cloning..."
-                git clone "$url" "$dir" || {
-                    echo "❌ Failed to clone repository."
-                    continue
-                }
-                cd "$dir" || { echo "❌ Failed to cd into $dir"; continue; }
-
-                # Checkout the commit hash if provided
-                if [[ -n "$commit_hash" ]]; then
-                    git checkout "$commit_hash" || {
-                        echo "❌ Commit hash '$commit_hash' not found."
-                        continue
-                    }
-                else
-                    git checkout "$branch" || {
-                        echo "❌ Failed to checkout branch '$branch'."
-                        continue
-                    }
-                fi
-
-                cd - >/dev/null || exit 1
-                echo "✅ Cloned and checked out commit/branch '$commit_hash' into $dir"
-            fi
-        } &
+            clone_repo "$url" "$dir" "$commit_hash" &
+        } 
     done
-
-    # Wait for all background processes to finish
     wait
     echo "==> All repository operations done."
 }
