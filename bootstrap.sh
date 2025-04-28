@@ -5,10 +5,10 @@ set -euo pipefail
 # --- Config ---
 DOTFILES_DIR="$HOME/.dotfiles"
 REPOS=(
-    "git://git.suckless.org/dwm $HOME/.de/dwm"
-    "git://git.suckless.org/st $HOME/.de/st"
-    "https://github.com/derf/feh.git $HOME/.de/feh"
-    "https://github.com/supplefrog/suckless-dot.git $DOTFILES_DIR"
+    "git://git.suckless.org/dwm" "$HOME/.de/dwm"
+    "git://git.suckless.org/st" "$HOME/.de/st"
+    "https://github.com/derf/feh.git" "$HOME/.de/feh"
+    "https://github.com/supplefrog/suckless-dot.git" "$DOTFILES_DIR"
 )
 
 # --- Functions ---
@@ -39,13 +39,38 @@ install_essentials() {
 
 sync_repos() {
     local commit="" OPTIND=1
-    while getopts "c:" o; do [[ $o = c ]] && commit=$OPTARG; done
+
+    # 1) Parse only the -c <commit> flag
+    while getopts "c:" opt; do 
+        case $opt in
+            c) commit=$OPTARG;
+            *) echo "Usage: sync_repos [-c <commit>] <url> [<dir>] ..."; return 1 ;;
+        esac
+    done
     shift $((OPTIND-1))
-    (( $# )) || { echo "Usage: sync_repos [-c commit] url[:dir]..."; return 1; }
-    for spec; do
-        # expand "url:dir" into two words or just "url"
-        IFS=':' read -r url dir <<<"$spec"
-        sync_repo ${commit:+-c $commit} "$url" ${dir:+$dir}
+    
+    # 2) Ensure at least one repo spec
+    if (( $# == 0 )); then
+        echo "Error : provide at least one <url> [<dir>]" >&2
+        return 1
+    fi
+
+    # 3) Loop over each url [+ optional dir]
+    while (( $# )); do
+        url=$1; shift
+        # If next arg doesn't start with http://, https://, ssh://, assume it's a dir
+        if [[ $# -gt 0 && ! $1 =~ ^(https?|ssh:// ]]; then
+            dir=$1; shift
+        else
+            dir=""
+        fi
+
+        # 4) Dispatch to sync_repo
+        if [[ -n $commit ]]; then
+            sync_repo -c "$commit" "$url" ${dir: +"$dir"}
+        else
+            sync_repo "$url" ${dir:+"$dir"_
+        fi
     done
 }
 
