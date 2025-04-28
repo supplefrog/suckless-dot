@@ -47,10 +47,6 @@ if [ "$result" -eq -1 ]; then
         "pacman")
             PKG_LIST="zlib"
             ;;
-        *)
-            echo "Unsupported package manager: $PKG_MGR"
-            exit 1
-            ;;
     esac
     $INSTALL_CMD PKG_LIST
 
