@@ -47,23 +47,21 @@ clone_repo() {
         rm -rf "$dir"
     fi
 
-    # Determine depth flag based on the commit_hash presence
-    local depth_flag=""
-    if [[ -z "$commit_hash" ]]; then
-        depth_flag="--depth 1"
-    fi
-
-    # Clone the repository if it's not already cloned
+    # If directory doesn't exist, clone the repo with or without depth depending on commit_hash
     if [[ ! -d "$dir/.git" ]]; then
         echo "Cloning $url into $dir..."
-        git clone $depth_flag "$url" "$dir" || { echo "❌ Clone failed"; return; }
+        if [[ -z "$commit_hash" ]]; then
+            git clone --depth 1 "$url" "$dir" || { echo "❌ Clone failed"; return; }
+        else
+            git clone "$url" "$dir" || { echo "❌ Clone failed"; return; }
+        fi
     fi
 
     cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
 
-    # If repository is shallow, attempt to unshallow it
-    if [[ -f .git/shallow ]]; then
-        echo "Shallow clone detected. Attempting to unshallow..."
+    # If commit hash is provided, unshallow the repo and fetch the full history
+    if [[ -n "$commit_hash" && -f .git/shallow ]]; then
+        echo "Shallow clone detected. Attempting to unshallow for commit hash '$commit_hash'..."
         git fetch --unshallow || { 
             echo "⚠️ Unshallow failed. Fetching full history with 'git fetch --all'...";
             git fetch --all || { 
@@ -77,9 +75,10 @@ clone_repo() {
 
     # If commit hash is provided, checkout that specific commit
     if [[ -n "$commit_hash" ]]; then
+        echo "Checking out commit hash '$commit_hash'..."
         git checkout "$commit_hash" || { echo "❌ Commit hash '$commit_hash' not found"; return; }
     else
-        # Fallback to detecting the default branch manually (older git versions compatible)
+        # If no commit hash, checkout the default branch
         echo "Fetching branches from the remote..."
         default_branch=$(git remote show origin | grep "HEAD branch" | awk '{print $NF}')
         
