@@ -40,9 +40,9 @@ if [ "$result" -eq -1 ]; then
     $PKG_MGR groupinstall "Development Tools"
 
     # Clone Git repository
-    cd /tmp
+    sudo cd /tmp
     sync_repo -c b3d7a52fac39193503a0b6728771d1bf6a161464 https://github.com/git/git.git
-    cd git
+    sudo cd git
     
     # Compile and install
     make prefix=/usr/bin all
