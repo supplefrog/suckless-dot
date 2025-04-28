@@ -59,7 +59,7 @@ sync_repos() {
     while (( $# )); do
         url=$1; shift
         # If next arg doesn't start with http://, https://, ssh://, assume it's a dir
-        if [[ $# -gt 0 && ! $1 =~ ^(https?|ssh:// ]]; then
+        if [[ $# -gt 0 && ! $1 =~ ^(https?|ssh):// ]]; then
             dir=$1; shift
         else
             dir=""
@@ -69,7 +69,7 @@ sync_repos() {
         if [[ -n $commit ]]; then
             sync_repo -c "$commit" "$url" ${dir: +"$dir"}
         else
-            sync_repo "$url" ${dir:+"$dir"_
+            sync_repo "$url" ${dir:+"$dir"}
         fi
     done
 }
