@@ -129,7 +129,6 @@ clone_repos() {
     echo "==> All repository operations done."
 }
 
-
 # --- Run ---
 detect_pkg_mgr
 install_essentials
