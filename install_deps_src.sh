@@ -38,13 +38,13 @@ if [ "$result" -eq -1 ]; then
     # Install required build tools
     case "$PKG_MGR" in
         "apt")
-            PKG_LIST="libexpat1-dev libz-dev gettext"
+            PKG_LIST="libcurl4-openssl-dev libexpat1-dev libz-dev libssl-dev gettext"
             ;;
         "dnf" | "yum")
             PKG_LIST="curl-devel expat-devel zlib-devel openssl-devel gettext"
             ;;
         "pacman")
-            PKG_LIST="zlib"
+            PKG_LIST="curl expat zlib openssl gettext"
             ;;
     esac
     $INSTALL_CMD PKG_LIST
