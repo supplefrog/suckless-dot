@@ -46,10 +46,16 @@ clone_repo() {
         rm -rf "$dir"
     fi
 
-    # Clone repo if directory doesn't exist
+    # Determine depth based on commit_hash presence
+    local depth_flag=""
+    if [[ -z "$commit_hash" ]]; then
+        depth_flag="--depth 1"  # Shallow clone when no commit hash is provided
+    fi
+
+    # Clone repo with appropriate depth
     if [[ ! -d "$dir/.git" ]]; then
         echo "Cloning $url into $dir..."
-        git clone "$url" "$dir" || { echo "❌ Clone failed"; return; }
+        git clone $depth_flag "$url" "$dir" || { echo "❌ Clone failed"; return; }
     fi
 
     cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
