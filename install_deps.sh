@@ -16,10 +16,6 @@ case "$PKG_MGR" in
     "pacman")
         PKG_LIST="base-devel libx11 libxft libxinerama libxrandr libxcb libxt curl imlib2 freetype2 fontconfig"
         ;;
-    *)
-        echo "Unsupported package manager: $PKG_MGR"
-        exit 1
-        ;;
 esac
 
 # Append common packages for all package managers
