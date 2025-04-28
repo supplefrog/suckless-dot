@@ -47,7 +47,7 @@ if [ "$result" -eq -1 ]; then
             PKG_LIST="curl expat zlib openssl gettext"
             ;;
     esac
-    $INSTALL_CMD PKG_LIST
+    $INSTALL_CMD $PKG_LIST
 
     # Clone Git repository
     sudo cd /tmp
