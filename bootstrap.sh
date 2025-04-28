@@ -60,12 +60,26 @@ clone_repo() {
 
     cd "$dir" || { echo "❌ Failed to cd into $dir"; return; }
 
-    # Fetch all updates and checkout commit/branch
-    git fetch --all || { echo "❌ Fetch failed"; return; }
+    # If the repository is shallow, try to unshallow it
+    if [[ -f .git/shallow ]]; then
+        echo "Shallow clone detected. Unshallowing..."
+        git fetch --unshallow || {
+            echo "⚠️ Failed to unshallow. Proceeding with shallow fetch."
+            git fetch --all || { echo "❌ Fetch failed"; return; }
+        }
+    else
+        git fetch --all || { echo "❌ Fetch failed"; return; }
+    fi
+
+    # Try checking out the default branch or commit hash
     if [[ -n "$commit_hash" ]]; then
         git checkout "$commit_hash" || { echo "❌ Commit hash not found"; return; }
     else
-        git checkout "$branch" || { echo "❌ Failed to checkout branch '$branch'"; return; }
+        # Fetch the available branches and check out the default branch
+        local default_branch
+        default_branch=$(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+        echo "Checking out the default branch '$default_branch'..."
+        git checkout "$default_branch" || { echo "❌ Failed to checkout branch '$default_branch'"; return; }
     fi
 
     cd - >/dev/null
