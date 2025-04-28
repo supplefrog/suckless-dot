@@ -43,7 +43,6 @@ if [ "$result" -eq -1 ]; then
         "dnf" | "yum")
             PKG_LIST="curl-devel expat-devel zlib-devel openssl-devel gettext"
             ;;
-            INSTALL_CMD="$INSTALL_CMD & $PKG_MGR groupinstall "Development Tools""
         "pacman")
             PKG_LIST="zlib"
             ;;
