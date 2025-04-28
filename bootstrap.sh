@@ -43,7 +43,7 @@ sync_repos() {
     # 1) Parse only the -c <commit> flag
     while getopts "c:" opt; do 
         case $opt in
-            c) commit=$OPTARG;
+            c) commit=$OPTARG ;;
             *) echo "Usage: sync_repos [-c <commit>] <url> [<dir>] ..."; return 1 ;;
         esac
     done
