@@ -24,5 +24,5 @@ PKG_LIST="$PKG_LIST gcc make pkg-config git dmenu vifm"
 echo "Installing required packages..."
 $INSTALL_CMD $PKG_LIST || echo "Warning: Some packages may have failed to install."
 if [[ "$PKG_MGR" == "dnf" || "$PKG_MGR" == "yum" ]]; then
-    yum groupinstall "Development Tools"
+    sudo yum groupinstall "Development Tools"
 fi
