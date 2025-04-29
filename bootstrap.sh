@@ -137,5 +137,5 @@ source "$DOTFILES_DIR/install_deps.sh" || echo "⚠️ install_deps.sh failed, c
 source "$DOTFILES_DIR/install_deps_src.sh" || echo "⚠️ install_deps_src.sh failed, continuing..."
 source "$DOTFILES_DIR/install.sh" || echo "⚠️ install.sh failed, continuing..."
 if [[ $PKG_MGR == "apt" ]]
-    source "$DOTFILES_DIR/ubuntu_config.sh" || echo "ubuntu_config failed, continuing..."
+    source "$DOTFILES_DIR/ubuntu_cfg.sh" || echo "⚠️ ubuntu_cfg.sh failed, continuing..."
 fi
