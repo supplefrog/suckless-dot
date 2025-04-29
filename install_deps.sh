@@ -12,7 +12,6 @@ case "$PKG_MGR" in
         ;;
     "dnf" | "yum")
         PKG_LIST="libX11-devel libXft-devel libXinerama-devel libXrandr-devel libxcb-devel libXt-devel imlib2-devel freetype-devel fontconfig-devel"
-        INSTALL_CMD="sudo $PKG_MGR groupinstall 'Development Tools' && $INSTALL_CMD"
         ;;
     "pacman")
         PKG_LIST="base-devel libx11 libxft libxinerama libxrandr libxcb libxt imlib2 freetype2 fontconfig"
@@ -24,3 +23,6 @@ PKG_LIST="$PKG_LIST gcc make pkg-config git dmenu vifm"
 
 echo "Installing required packages..."
 $INSTALL_CMD $PKG_LIST || echo "Warning: Some packages may have failed to install."
+if [[ "$PKG_MGR" == "dnf" || "$PKG_MGR" == "yum" ]]; then
+    yum groupinstall "Development Tools"
+fi
