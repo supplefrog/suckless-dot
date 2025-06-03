@@ -7,10 +7,10 @@ source "$DOTFILES_DIR/dot.sh"
 # Build suckless software
 echo "==> Building repositories..."
 REPO_DIRS=(
-    "$HOME/.de/dwm"
-    "$HOME/.de/feh"
-    "$HOME/.de/st"
     "$HOME/.de/sxwm"
+    "$HOME/.de/dwm"
+    "$HOME/.de/st"
+    "$HOME/.de/feh"
 )
 
 BUILD_CMDS=(
