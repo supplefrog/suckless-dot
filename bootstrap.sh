@@ -5,9 +5,10 @@ set -euo pipefail
 # --- Config ---
 DOTFILES_DIR="$HOME/.dotfiles"
 REPOS=(
-    "git://git.suckless.org/dwm" "$HOME/.de/dwm"
-    "git://git.suckless.org/st" "$HOME/.de/st"
+    "https://github.com/uint23/sxwm#"
     "https://github.com/derf/feh.git" "$HOME/.de/feh"
+    "git://git.suckless.org/st" "$HOME/.de/st"
+    "git://git.suckless.org/dwm" "$HOME/.de/dwm"
     "https://github.com/supplefrog/suckless-dot.git" "$DOTFILES_DIR"
 )
 
