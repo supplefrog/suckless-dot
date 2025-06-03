@@ -8,8 +8,9 @@ source "$DOTFILES_DIR/dot.sh"
 echo "==> Building repositories..."
 REPO_DIRS=(
     "$HOME/.de/dwm"
-    "$HOME/.de/st"
     "$HOME/.de/feh"
+    "$HOME/.de/st"
+    "$HOME/.de/sxwm"
 )
 
 BUILD_CMDS=(
