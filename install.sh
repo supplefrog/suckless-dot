@@ -16,6 +16,7 @@ REPO_DIRS=(
 BUILD_CMDS=(
     "sudo make clean install"
     "sudo make clean install"
+    "sudo make clean install"
     "sudo make && sudo make install"
 )
 
