@@ -23,7 +23,7 @@ mod_key : ctrl
 # Application Launchers:
 bind : mod + Return : "st"
 bind : mod + b : "google-chrome"
-bind : mod + slash : "dmenu_run"
+bind : mod + slash : "dmenu_run -fn 'Fira Code:size=10' -nb '#000000' -nf '#eeeeee' -sb '#808080' -sf '#eeeeee'"
 bind : mod + m : "st -e vifm"
 
 # Window Management:
