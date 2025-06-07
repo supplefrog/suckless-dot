@@ -1,11 +1,10 @@
-version: '3'
 services:
   warp:
     image: warp-container
     environment:
       - DISPLAY=:0
       - XDG_RUNTIME_DIR=/tmp
-    user: "${UID}:${GID}"
+    user: "${U_ID}:${G_ID}"
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix
       - /:/mnt
