@@ -8,13 +8,11 @@ source "$DOTFILES_DIR/dot.sh"
 echo "==> Building repositories..."
 REPO_DIRS=(
     "$HOME/.de/sxwm"
-    "$HOME/.de/dwm"
     "$HOME/.de/st"
     "$HOME/.de/feh"
 )
 
 BUILD_CMDS=(
-    "sudo make clean install"
     "sudo make clean install"
     "sudo make clean install"
     "sudo make && sudo make install"
