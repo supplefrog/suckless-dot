@@ -8,8 +8,8 @@ REPOS=(
     "https://github.com/uint23/sxwm.git" "$HOME/.de/sxwm"
     "https://github.com/derf/feh.git" "$HOME/.de/feh"
     "git://git.suckless.org/st" "$HOME/.de/st"
-    "git://git.suckless.org/dwm" "$HOME/.de/dwm"
     "https://github.com/supplefrog/suckless-dot.git" "$DOTFILES_DIR"
+    "https://github.com/Notenlish/anifetch.git" "$HOME/.de/anifetch"
 )
 
 # --- Functions ---
