@@ -7,9 +7,8 @@ DOTFILES_DIR="$HOME/.dotfiles"
 REPOS=(
     "https://github.com/uint23/sxwm.git" "$HOME/.de/sxwm"
     "https://github.com/derf/feh.git" "$HOME/.de/feh"
-    "git://git.suckless.org/st" "$HOME/.de/st"
+    "https://github.com/sergei-grechanik/st-graphics.git" "$HOME/.de/st-graphics"
     "https://github.com/supplefrog/suckless-dot.git" "$DOTFILES_DIR"
-    "https://github.com/Notenlish/anifetch.git" "$HOME/.de/anifetch"
 )
 
 # --- Functions ---
