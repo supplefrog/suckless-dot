@@ -24,7 +24,7 @@ mod_key : ctrl
 bind : mod + Return : "st"
 bind : mod + b : "google-chrome"
 bind : mod + slash : "dmenu_run -fn 'Fira Code:size=10' -nb '#000000' -nf '#eeeeee' -sb '#808080' -sf '#eeeeee'"
-bind : mod + m : "st -e vifm"
+bind : mod + m : "st -e yazi"
 
 # Window Management:
 call : mod + shift + w : close_window
@@ -52,7 +52,7 @@ call : mod + shift + space : global_floating
 call : mod + shift + f : fullscreen
 
 # Reload Config
-call : mod + r : reload_config
+call : mod + alt + r : reload_config
 
 # Workspaces (1-9)
 workspace : mod + 1          : move 1
