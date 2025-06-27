@@ -14,7 +14,7 @@ fi
 #if [ -z "$OPEN" ]; then
 #    export OPEN=1
 #    st &
-#    python3.9 $HOME/.de/anifetch/anifetch.py -f $HOME/.de/anifetch/example.mp4
+#    python3.13 $HOME/.de/anifetch/anifetch.py -f $HOME/.de/anifetch/example.mp4
 #    printf '\n\n'
 #fi
 
