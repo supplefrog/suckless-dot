@@ -18,6 +18,8 @@ BUILD_CMDS=(
     "sudo make && sudo make install"
 )
 
+pip3 install git+https://github.com/Notenlish/anifetch.git
+
 for i in "${!REPO_DIRS[@]}"; do
     REPO="${REPO_DIRS[$i]}"
     CMD="${BUILD_CMDS[$i]}"
